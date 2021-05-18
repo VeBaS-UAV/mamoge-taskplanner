@@ -1,11 +1,11 @@
 import setuptools
 
-print(setuptools.find_packages(where="."))
-print(setuptools.find_namespace_packages(include=["mamoge/*","tests/*"]))
 
 packages = [package for package in setuptools.find_namespace_packages(where='mamoge', include='mamoge.*')]
-print(packages)
 
+packages = list(setuptools.find_packages(where=".", exclude=["tests"]))
+packages.append("mamoge.taskplanner.test")
+print(packages)
 setuptools.setup(
     name="mamoge-taskplanner",
     version="0.0.1",
@@ -22,8 +22,8 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
     ],
-    package_dir={"mamoge.taskplanner": "./mamoge/taskplanner", "mamoge.taskplanner.tests":"./tests/helpers"},
+    package_dir={"mamoge.taskplanner": "mamoge/taskplanner", "mamoge.taskplanner.test":"tests"},
     #packages=["mamoge.taskplanner", "mamoge.taskplanner.nx", "mamoge.taskplanner.optimize" ,"mamoge.taskplanner.tests"],
-    packages=setuptools.find_packages(where="."),
+    packages=packages,
     python_requires=">=3.9",
 )
