@@ -1,10 +1,9 @@
 import setuptools
-
+from distutils.extension import Extension
 
 packages = [package for package in setuptools.find_namespace_packages(where='mamoge', include='mamoge.*')]
 
-packages = list(setuptools.find_packages(where=".", exclude=["tests"]))
-packages.append("mamoge.taskplanner.test")
+packages = list(setuptools.find_packages(where="."))
 print(packages)
 setuptools.setup(
     name="mamoge-taskplanner",
@@ -25,5 +24,5 @@ setuptools.setup(
     package_dir={"mamoge.taskplanner": "mamoge/taskplanner", "mamoge.taskplanner.test":"tests"},
     #packages=["mamoge.taskplanner", "mamoge.taskplanner.nx", "mamoge.taskplanner.optimize" ,"mamoge.taskplanner.tests"],
     packages=packages,
-    python_requires=">=3.9",
+    python_requires=">=3.9"
 )

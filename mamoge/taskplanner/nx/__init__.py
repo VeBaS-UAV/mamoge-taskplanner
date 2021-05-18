@@ -3,6 +3,8 @@ import networkx as nx
 from networkx.algorithms import dag
 import numpy as np
 
+from mamoge.taskplanner.location import LocationBuilder
+
 def G_draw_taskgraph(G: nx.Graph) -> None:
     """Plot a task graph using location and distance attributes"""
     pos = nx.drawing.layout.multipartite_layout(G, subset_key="layer")
@@ -25,6 +27,14 @@ def G_distance_manhatten(G: nx.Graph, i:Any, j:Any, distance_attribute="location
     l2 = np.array(G.nodes[j][distance_attribute])
 
     return float(np.abs(l1-l2).sum())
+
+def G_distance_location(G: nx.Graph, i:Any, j:Any):
+    location_i = LocationBuilder.location_from_dict(G.nodes[i]["location"])
+
+    location_j = LocationBuilder.location_from_dict(G.nodes[j]["location"])
+
+    return location_i.distance_to(location_j)
+
 
 def G_problem_from_dag(G:nx.Graph) -> nx.Graph:
     """Return a graph representing the problem for a task dag"""
