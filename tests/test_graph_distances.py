@@ -9,9 +9,6 @@ def test_cartesian_distance():
 
     assert c1.distance_to(c2) == 3
 
-#def test_cartesian_graph_distance():
-
-# %%
 
 def test_cartesian_distance_w_graph():
     c1 = CartesianLocation(1,1)

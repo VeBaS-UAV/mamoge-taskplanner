@@ -32,9 +32,17 @@ class ORTaskOptimizer():
             self.distance_callback_counter += 1
 
             try:
-                v = self.dag[from_node][to_node]["distance"]
-                #print("distance callback", from_node, to_node, v)
-                return v
+                v = self.dag.nodes[from_node]["location"]
+                u = self.dag.nodes[to_node]["location"]
+
+
+                #TODO add distance calculation here for Location objects
+                d =  v.distance_to(u)
+
+                print("distance callback", from_node, to_node, v, u, d)
+
+                return d
+
             except Exception as e:
                 self.distance_callback_counter_fail += 1
                 #breakpoint()

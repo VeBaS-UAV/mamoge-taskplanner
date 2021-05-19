@@ -1,4 +1,4 @@
-from mamoge.taskplanner.helpers import graph_helper
+from mamoge_helpers import graph_helper
 import numpy as np
 import mamoge.taskplanner.nx as mamogenx
 
@@ -6,8 +6,8 @@ from mamoge.taskplanner.optimize import TaskOptimizer
 # %%
 
 def test_simple_graph_solver():
-# create default example graph
-    G = graph_helper.example_graph(False)
+    # create default example graph
+    G = graph_helper.example_graph_1()
 
     # check graph length
     assert len(set(G.nodes).difference(set(np.arange(7)))) == 0
@@ -35,7 +35,7 @@ def test_simple_graph_solver():
 def test_extended_graph_solver():
 
     # create extended example graph
-    G = graph_helper.example_graph(True)
+    G = graph_helper.example_graph_2()
 
     # check graph length
     assert len(set(G.nodes).difference(set(np.arange(14)))) == 0

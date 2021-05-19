@@ -21,6 +21,10 @@ class Location:
     def distance_to(self, other):
         pass
 
+    @abstractmethod
+    def as_tuple(self):
+        pass
+
 class LocationBuilder():
 
     _location_classes: Location = {}
@@ -59,6 +63,12 @@ class CartesianLocation(Location):
         # use manhatten distance
         return abs(dx) + abs(dy)
 
+    def __repr__(self):
+        return f"CartesianLocation({self.x},{self.y})"
+
+    def as_tuple(self):
+        return self.x, self.y
+
 
 class GPSLocation(Location):
 
@@ -78,6 +88,8 @@ class GPSLocation(Location):
     def distance_to(self, other: "GPSLocation") -> float:
         return gps_distance.distance(self.as_tuple(), other.as_tuple()).meters
 
+    def __repr__(self):
+        return f"GPSLocation({self.latitude},{self.longitude},{self.altitude})"
 
 LocationBuilder.add_locationclass("cartesian", CartesianLocation)
 LocationBuilder.add_locationclass("gps", GPSLocation)

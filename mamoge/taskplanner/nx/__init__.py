@@ -8,12 +8,14 @@ from mamoge.taskplanner.location import LocationBuilder
 def G_draw_taskgraph(G: nx.Graph) -> None:
     """Plot a task graph using location and distance attributes"""
     pos = nx.drawing.layout.multipartite_layout(G, subset_key="layer")
-    pos = {n:G.nodes[n]["location"] for n in G.nodes}
+    #pos = {n:G.nodes[n]["location"] for n in G.nodes}
 
     colors = (["#00aaaa"] * len(G))
     colors[0] = "#00aa00"
+    labels_dict = {l:G.nodes[l]["name"] for l in G.nodes}
 
-    nx.draw(G, node_color=colors, pos=pos, with_labels=True)
+    nx.draw(G, node_color=colors, pos=pos, with_labels=True, labels=labels_dict)
+
 
     edge_dict = {w:G[w[0]][w[1]]['distance'] for w in G.edges}
 
