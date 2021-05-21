@@ -6,16 +6,16 @@ class TaskOptimizer:
 
 
     def __init__(self) -> None:
-        self.dag = None
+        self.graph = None
         self.impl = ORTaskOptimizer()
         pass
 
-    def set_dag(self, G:nx.Graph)-> None:
+    def set_graph(self, G:nx.Graph)-> None:
         """set the problem graph to be optimized"""
-        self.dag = G
+        self.graph = G
 
     @abstractmethod
     def solve(self, time=30):
         """Solve the optimization problem"""
-        self.impl.set_dag(self.dag)
+        self.impl.set_graph(self.graph)
         return self.impl.solve(time)

@@ -1,5 +1,6 @@
 from abc import abstractmethod
 import networkx as nx
+from mamoge.taskplanner import nx as mamogenx
 
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
@@ -9,18 +10,18 @@ class ORTaskOptimizer():
 
 
     def __init__(self) -> None:
-        self.dag = None
+        self.graph = None
         self.manager: pywrapcp.RoutingIndexManager = None
         self.distance_callback_counter = 0
         self.distance_callback_counter_fail = 0
         pass
 
-    def set_dag(self, G:nx.Graph)-> None:
+    def set_graph(self, G:nx.Graph)-> None:
         """set the problem graph to be optimized"""
-        self.dag = G
+        self.graph = G
 
 
-# Create and register a transit callback.
+    # Create and register a transit callback.
     def distance_callback(self, from_index, to_index):
         """Returns the distance between the two nodes."""
         # Convert from routing variable Index to distance matrix NodeIndex.
@@ -32,14 +33,12 @@ class ORTaskOptimizer():
             self.distance_callback_counter += 1
 
             try:
-                v = self.dag.nodes[from_node]["location"]
-                u = self.dag.nodes[to_node]["location"]
+                v = self.graph.nodes[from_node]["location"]
+                u = self.graph.nodes[to_node]["location"]
 
-
-                #TODO add distance calculation here for Location objects
                 d =  v.distance_to(u)
 
-                print("distance callback", from_node, to_node, v, u, d)
+                #print("distance callback", from_node, to_node, v, u, d)
 
                 return d
 
@@ -55,10 +54,12 @@ class ORTaskOptimizer():
     @abstractmethod
     def solve(self, time=30):
         """Solve the optimization problem"""
-        num_nodes = len(self.dag.nodes)
+        num_nodes = len(self.graph.nodes)
         num_routes = 1
-        node_start = 0
-        node_end = list(self.dag.nodes)[-1]
+        #print("Solving dag", self.dag)
+        node_start = mamogenx.G_first(self.graph)
+        node_end = mamogenx.G_last(self.graph)
+        print("Start to end", node_start, node_end)
 
         self.manager = pywrapcp.RoutingIndexManager(num_nodes, num_routes, [node_start],[node_end])
 
@@ -76,10 +77,13 @@ class ORTaskOptimizer():
         search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
         search_parameters.time_limit.FromSeconds(time)
 
-        assignment = self.routing.SolveWithParameters(search_parameters)
+        solution = self.routing.SolveWithParameters(search_parameters)
 
 
-        return self.extract_solution(num_routes, self.manager, self.routing, assignment)
+        if solution is None:
+            return []
+
+        return self.extract_solution(num_routes, self.manager, self.routing, solution)
 
 
     def extract_solution(self, num_routes, manager, routing, solution):

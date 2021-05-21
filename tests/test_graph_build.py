@@ -22,7 +22,7 @@ def test_simple_graph_solver():
     # find solution
 
     taskoptimizer = TaskOptimizer()
-    taskoptimizer.set_dag(Gn)
+    taskoptimizer.set_graph(Gn)
 
     results = taskoptimizer.solve(time=1)
 
@@ -50,7 +50,7 @@ def test_extended_graph_solver():
     # find solution
 
     taskoptimizer = TaskOptimizer()
-    taskoptimizer.set_dag(Gn)
+    taskoptimizer.set_graph(Gn)
 
     results = taskoptimizer.solve(time=1)
 
