@@ -104,6 +104,7 @@ class ORTaskOptimizer():
                 index = solution.Value(routing.NextVar(index))
                 # route_distance += routing.GetArcCostForVehicle(
                     # previous_index, index, vehicle_id)
+            route.append(manager.IndexToNode(index))
             results.append(route)
 
             # plan_output += '{}\n'.format(manager.IndexToNode(index))

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 import networkx as nx
 from networkx.algorithms import dag
 import numpy as np
@@ -196,3 +196,37 @@ def G_find_path(G:nx.Graph, source:int, target:int, weight, heuristic=None):
 
     return nx.algorithms.shortest_paths.astar_path(G, source, target,
                                                    heuristic=heuristic_func, weight=weight)
+
+def G_path_length(G:nx.Graph, path:List[int]):
+    dist = 0
+
+    if isinstance(path[0], list): # list of path
+        for p in path:
+            dist += G_path_length(G, p)
+
+    else:
+        for i,j in zip(path[:-1], path[1:]):
+            li = G.nodes[i]["location"]
+            lj = G.nodes[j]["location"]
+
+            d = li.distance_to(lj)
+
+            #print(li, lj, d)
+            dist += d
+
+    return dist
+
+def G_nxnodelist_to_subpaths(G:nx.Graph, tasklist:List[int]):
+    task_path = []
+
+    for t1, t2 in zip(tasklist[:-1], tasklist[1:]):
+        #print(t1, t2)
+        l1 = G.nodes[t1]["location"]
+        l2 = G.nodes[t2]["location"]
+
+        subpath = l1.path_to(l2)
+        task_path.append(subpath)
+
+        #print("->", subpath)
+        #print("######")
+    return task_path
