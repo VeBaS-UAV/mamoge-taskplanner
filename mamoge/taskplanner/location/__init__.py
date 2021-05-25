@@ -80,11 +80,11 @@ class CartesianLocation(Location):
     """Represent a Location in cartesian space
     """
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, distance_func=np.linalg.norm):
         Location.__init__(self, "cartesian")
         self._x = x
         self._y = y
-
+        self._distance_func = distance_func
     def as_dict(self) -> dict:
         return dict(type=self.type, x=self.x, y=self.y)
 
@@ -92,9 +92,9 @@ class CartesianLocation(Location):
         dx = self.x - other.x
         dy = self.y - other.y
 
-        # use manhatten distance for debugging
-        # TODO use euclidean distance in production / later
-        return abs(dx) + abs(dy)
+        d_array = np.array([dx, dy])
+        return self._distance_func(d_array)
+
 
     def __repr__(self):
         return f"CartesianLocation({self.x},{self.y})"
@@ -134,7 +134,7 @@ class GPSCartesianLocation(GPSLocation):
 
     def __init__(self, x, y, origin=None, bearing=0):
         if origin is None:
-            origin = 51.87820297838263, 8.771718854268894 # Senne
+            origin = 0,0 #51.87820297838263, 8.771718854268894 # Senne
         lat, lon = origin
         lat, lon = cartesian_offset_to_latlon(x, y, lat, lon, bearing)
         self._x_init = x
@@ -154,10 +154,19 @@ class NXLocation(GraphLocation):
        self.nx_args = nx_args
 
     def base_node(self):
+        node_id = self.base_node_id()
+
+        if node_id:
+            return self.G_base.nodes[node_id]
+        return None
+
+    def base_node_id(self):
         node = mamogenx.G_lookup_node(self.G_base, **self.nx_args)
 
         if len(node) > 0:
             return node[0]
+
+        return None
 
     def as_dict(self) -> dict:
         base_id = self.base_node()
@@ -166,11 +175,10 @@ class NXLocation(GraphLocation):
         return {**dict(type=self.type), **self.nx_args, **base_node}
 
     def as_tuple(self) -> tuple:
-        base_id = self.base_node()
-        base_node = self.G_base.nodes[base_id]["location"]
+        base_node = self.base_node()
 
         if base_node:
-            return base_node.as_tuple()
+            return base_node["location"].as_tuple()
 
         return (None, None)
 
@@ -178,13 +186,21 @@ class NXLocation(GraphLocation):
         """Return the distance to the next nx location as the distance along the path to the other location in the base graph"""
         path = self.path_to(other)
 
-        return len(path)
+        #print("distance to path", path)
+        dist = 0
+        for s,t in zip(path[:-1], path[1:]):
+            sn = self.G_base.nodes[s]["location"]
+            tn = self.G_base.nodes[t]["location"]
+            #print('s,t', sn, tn)
+            dist += sn.distance_to(tn)
+
+        return dist#len(path)
 
     def path_to(self, other: "NXLocation", weight="length") -> list[Any]:
         """Return the path to the other node using astar algorithm.
         """
-        l1 = self.base_node()
-        l2 = other.base_node()
+        l1 = self.base_node_id()
+        l2 = other.base_node_id()
 
         path = mamogenx.G_find_path(self.G_base, l1, l2, weight=weight)
 
@@ -192,7 +208,8 @@ class NXLocation(GraphLocation):
 
     def __repr__(self):
         bn = self.base_node()
-        return f"NXLocation({self.G_base},{self.nx_args}, {bn})"
+
+        return f"NXLocation({self.G_base},Base Ref: {self.nx_args}, {bn})"
 
 
 LocationBuilder.add_locationclass("cartesian", CartesianLocation)
