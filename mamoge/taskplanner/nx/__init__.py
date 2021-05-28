@@ -2,8 +2,11 @@ from typing import Any, List
 import networkx as nx
 from networkx.algorithms import dag
 import numpy as np
+import matplotlib
 import matplotlib.pylab as plt
 import functools
+import numpy as np
+import itertools
 
 def G_draw_taskgraph_w_pos_layer(G: nx.Graph):
     pos = nx.drawing.layout.multipartite_layout(G, subset_key="layer")
@@ -15,7 +18,8 @@ def G_draw_taskgraph_w_pos_location(G: nx.Graph):
     return G_draw_taskgraph(G, pos=pos)
 
 def G_draw_taskgraph(G: nx.Graph, pos=None) -> None:
-
+    fig = matplotlib.pyplot.gcf()
+    fig.set_size_inches(18.5, 10.5)
     """Plot a task graph using location and distance attributes"""
 #    if pos is None:
 #        pos = {n:G.nodes[n]["location"] for n in G.nodes}
@@ -28,7 +32,11 @@ def G_draw_taskgraph(G: nx.Graph, pos=None) -> None:
     except:
         labels_dict = None
 
-    nx.draw(G, node_color=colors, pos=pos, with_labels=True, labels=labels_dict)
+    #nx.draw(G, node_color=colors, pos=pos, with_labels=True, labels=labels_dict, lab)
+    new_pos = {k:(v[0]+0.1, v[1]+0.12) for k,v in pos.items()}
+    print(pos)
+    nx.draw_networkx(G, node_color=colors, pos=pos, node_shape='s', node_size=1000)
+    nx.draw_networkx_labels(G, new_pos, labels=labels_dict, font_size=10)
 
 
     try:
