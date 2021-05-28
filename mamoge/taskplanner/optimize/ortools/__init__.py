@@ -38,8 +38,6 @@ class ORTaskOptimizer():
 
                 d =  v.distance_to(u)
 
-                #print("distance callback", from_node, to_node, v, u, d)
-
                 return d
 
             except Exception as e:
@@ -51,8 +49,21 @@ class ORTaskOptimizer():
             print("Exception", e)
             return 10000000
 
+    def distance_matrix_callback(self, D, from_index, to_index):
+        try:
+            from_node = self.manager.IndexToNode(from_index)
+            to_node = self.manager.IndexToNode(to_index)
+
+            return D[from_node, to_node]
+
+        except Exception as e:
+            print("distance matrix callback error", from_node, to_node, e)
+
+            return 10000000
+
+
     @abstractmethod
-    def solve(self, time=30):
+    def solve(self, time=30, constrains=[]):
         """Solve the optimization problem"""
         num_nodes = len(self.graph.nodes)
         num_routes = 1
@@ -65,18 +76,56 @@ class ORTaskOptimizer():
 
         self.routing = pywrapcp.RoutingModel(self.manager)
 
-        cb = lambda x,y: self.distance_callback(x,y)
+
+        print("Calculating distance matrix")
+        distance_matrix = mamogenx.G_distance_matrix(self.graph)
+
+        #cb = lambda x,y: self.distance_callback(x,y)
+        cb = lambda x,y: self.distance_matrix_callback(distance_matrix, x,y)
+        #cb = lambda x,y: 1
 
         transit_callback_index = self.routing.RegisterTransitCallback(cb)
 
         # Define cost of each arc.
         self.routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
+        def time_callback(from_index, to_index):
+            # Convert from routing variable Index to time matrix NodeIndex.
+            from_node = self.manager.IndexToNode(from_index)
+            to_node = self.manager.IndexToNode(to_index)
+            return 1#data['time_matrix'][from_node][to_node]
+
+        time_callback_index = self.routing.RegisterTransitCallback(time_callback)
+        dimension_name = 'Time'
+        self.routing.AddDimension(
+            time_callback_index,
+            5,  # slack
+            30000000,  # vehicle maximum travel distance
+            True,  # start cumul to zero
+            dimension_name)
+        time_dimension = self.routing.GetDimensionOrDie(dimension_name)
+        time_dimension.SetGlobalSpanCostCoefficient(1)
+
+
+        print("Adding constraints")
+        for u,v in constrains:
+            print("constraints", u,v)
+            first_index = self.manager.NodeToIndex(u)
+            second_index = self.manager.NodeToIndex(v)
+            # same vehicle for every node in the sequence
+            self.routing.solver().Add(self.routing.VehicleVar(first_index) == self.routing.VehicleVar(second_index))
+
+            self.routing.solver().Add(
+                time_dimension.CumulVar(first_index) +2 <= time_dimension.CumulVar(second_index))
+
+
+
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
         search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
         search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
         search_parameters.time_limit.FromSeconds(time)
 
+        print("Solving tasks")
         solution = self.routing.SolveWithParameters(search_parameters)
 
 

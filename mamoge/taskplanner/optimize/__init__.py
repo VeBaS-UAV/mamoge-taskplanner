@@ -15,7 +15,7 @@ class TaskOptimizer:
         self.graph = G
 
     @abstractmethod
-    def solve(self, time=30):
+    def solve(self, time=30, constraints=[]):
         """Solve the optimization problem"""
         self.impl.set_graph(self.graph)
-        return self.impl.solve(time)
+        return self.impl.solve(time, constrains=constraints)

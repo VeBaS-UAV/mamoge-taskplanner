@@ -89,12 +89,12 @@ def G_distance_location(G: nx.Graph, i:Any, j:Any):
 
 
 def G_first(G:nx.Graph):
-    return [n for n in G.nodes if len(list(G.predecessors(n)))==1][0]
+    return [n for n in G.nodes if len(list(G.predecessors(n)))==0][0]
     #return list(dag.topological_sort(G))[0]
 
 def G_last(G:nx.Graph):
     #return list(dag.topological_sort(G))[-1]
-    return [n for n in G.nodes if len(G[n])==1][0]
+    return [n for n in G.nodes if len(G[n])==0][0]
 
 def G_problem_from_dag(G:nx.Graph) -> nx.Graph:
     """Return a graph representing the problem for a task dag"""
@@ -113,17 +113,41 @@ def G_problem_from_dag(G:nx.Graph) -> nx.Graph:
         Gt = G.copy()
         Gt.remove_nodes_from(list(anc))
         Gt.remove_nodes_from(list(desc))
+        Gt.remove_node(node)
 
         #print("Gt nodes", node, anc, desc,  Gt.nodes)
         # TODO remove distance calculation, only add edge
         for n in Gt.nodes:
+
             #print("add edge", node, n, Gn.nodes[node], Gn.nodes[n])
             l1 = Gn.nodes[node]["location"]
             l2 = Gn.nodes[n]["location"]
 
-            Gn.add_edge(node, n, distance=l1.distance_to(l2))
+            # TODO do we need a distance clalculation here?
+            #Gn.add_edge(node, n, distance=l1.distance_to(l2))
+            Gn.add_edge(node, n)
 
     return Gn
+
+def G_descendent_constrains(G):
+    first, last = G_first(G), G_last(G)
+
+    constrains = []
+    for n in G.nodes:
+
+        if n in (first, last):
+            continue
+
+        desc = nx.algorithms.dag.descendants(G, n)
+
+        for m in desc:
+            if m in (first, last):
+                continue
+            constrains.append((n,m))
+
+    return constrains
+
+
 
 def G_lookup_edge(G:nx.Graph, **query):
     result = []
