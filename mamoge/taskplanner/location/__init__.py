@@ -145,7 +145,7 @@ class GPSCartesianLocation(GPSLocation):
         return f"GPSCartesianLocation({self.latitude},{self.longitude},{self.altitude},{self._x_init},{self._y_init})"
 
 
-
+        
 class NXLocation(GraphLocation):
     """A graph location"""
     def __init__(self, G_base: nx.Graph(), **nx_args):
@@ -186,6 +186,8 @@ class NXLocation(GraphLocation):
         """Return the distance to the next nx location as the distance along the path to the other location in the base graph"""
         path = self.path_to(other)
 
+        if path is None or len(path) == 0:
+            return None
         #print("distance to path", path)
         dist = 0
         for s,t in zip(path[:-1], path[1:]):
@@ -211,6 +213,30 @@ class NXLocation(GraphLocation):
 
         return f"NXLocation({self.G_base},Base Ref: {self.nx_args}, {bn})"
 
+
+class NXLayerLocation(NXLocation):
+    
+    def __init__(self, id, G_layer:nx.Graph, G_base:nx.Graph, **nx_args):
+        NXLocation.__init__(self, G_base, **nx_args)
+        self.id = id
+        self.G = G_layer
+        
+    def diststance_to(self, other:"NXLayerLocation"):
+        if self.G.has_edge(self.id, other.id):
+            return NXLocation.distance_to(self, other)
+        else:
+            return None
+        
+    def path_to(self, other:"NXLayerLocation"):
+        if self.G.has_edge(self.id, other.id):
+            return NXLocation.path_to(self, other)
+        else:
+            return None
+
+    def __repr__(self):
+        bn = self.base_node()
+
+        return f"NXLayerLocation({self.G_base},Base Ref: {self.nx_args}, {bn})"
 
 LocationBuilder.add_locationclass("cartesian", CartesianLocation)
 LocationBuilder.add_locationclass("gps", GPSLocation)
