@@ -238,3 +238,25 @@ def G_nxnodelist_to_subpaths(G:nx.Graph, tasklist:List[int]):
         #print("->", subpath)
         #print("######")
     return task_path
+
+
+def G_distance_matrix(G, distance_fallback=np.inf):
+    l = len(G)
+    distance_matrix = np.zeros((l,l))
+    #distance_matrix
+
+    for i, j in itertools.combinations(range(l), r=2):
+        l1 = G.nodes[i]["location"]
+        l2 = G.nodes[j]["location"]
+
+        d1 = l1.distance_to(l2)
+
+        #check if there is a way to the other location
+        if (d1 is None):
+            d1 = distance_fallback
+            d1 = 1000000
+
+        distance_matrix[i,j] = d1
+        distance_matrix[j,i] = d1
+
+    return distance_matrix
