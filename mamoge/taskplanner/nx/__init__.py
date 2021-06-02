@@ -34,7 +34,7 @@ def G_draw_taskgraph(G: nx.Graph, pos=None) -> None:
 
     #nx.draw(G, node_color=colors, pos=pos, with_labels=True, labels=labels_dict, lab)
     new_pos = {k:(v[0]+0.1, v[1]+0.12) for k,v in pos.items()}
-    print(pos)
+    # print(pos)
     nx.draw_networkx(G, node_color=colors, pos=pos, node_shape='s', node_size=1000)
     nx.draw_networkx_labels(G, new_pos, labels=labels_dict, font_size=10)
 
@@ -103,6 +103,10 @@ def G_problem_from_dag(G:nx.Graph) -> nx.Graph:
     Gn = G.copy()
     for node, anodes in G.adjacency():
         #print("it node", node, G.nodes[node])
+        node_args = G.nodes[node]
+        if "location" in node_args:
+            node_args["location"].G = Gn
+
         Gn.add_node(node, **G.nodes[node])
         for anode in anodes:
             Gn.add_edge(node, anode, **G.edges[(node, anode)])
@@ -252,7 +256,7 @@ def G_nxnodelist_to_subpaths(G:nx.Graph, tasklist:List[int]):
     task_path = []
 
     for t1, t2 in zip(tasklist[:-1], tasklist[1:]):
-        #print(t1, t2)
+        # print(t1, t2)
         l1 = G.nodes[t1]["location"]
         l2 = G.nodes[t2]["location"]
 
@@ -278,7 +282,6 @@ def G_distance_matrix(G, distance_fallback=np.inf):
         #check if there is a way to the other location
         if (d1 is None):
             d1 = distance_fallback
-            d1 = 1000000
 
         distance_matrix[i,j] = d1
         distance_matrix[j,i] = d1

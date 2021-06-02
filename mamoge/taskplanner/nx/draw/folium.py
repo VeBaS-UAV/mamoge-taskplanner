@@ -1,4 +1,5 @@
 import networkx as nx
+from networkx.generators.random_graphs import random_kernel_graph
 import numpy as np
 import folium
 import folium.plugins
@@ -63,9 +64,12 @@ def draw_folium_path(G, path, folium_map=None, name="name", color=None, show=Tru
 
 
     if isinstance(path[0], list):
-        print(path)
+        # print(path)
         for i, subpath in enumerate(path):
-            folium_map = draw_folium_path(G, subpath, folium_map=folium_map, name=f"path {i}", show=show)
+                if subpath is None:
+                        print("subpath ", i, " is None")
+                        continue
+                folium_map = draw_folium_path(G, subpath, folium_map=folium_map, name=f"path {i}", show=show)
 
         return folium_map
 

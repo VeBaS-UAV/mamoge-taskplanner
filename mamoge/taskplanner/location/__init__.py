@@ -145,7 +145,9 @@ class GPSCartesianLocation(GPSLocation):
         return f"GPSCartesianLocation({self.latitude},{self.longitude},{self.altitude},{self._x_init},{self._y_init})"
 
 
-        
+
+
+
 class NXLocation(GraphLocation):
     """A graph location"""
     def __init__(self, G_base: nx.Graph(), **nx_args):
@@ -222,12 +224,15 @@ class NXLayerLocation(NXLocation):
         self.G = G_layer
         
     def diststance_to(self, other:"NXLayerLocation"):
+        #return NXLocation.distance_to(self, other)
+
         if self.G.has_edge(self.id, other.id):
             return NXLocation.distance_to(self, other)
         else:
             return None
         
     def path_to(self, other:"NXLayerLocation"):
+        #return NXLocation.path_to(self, other)
         if self.G.has_edge(self.id, other.id):
             return NXLocation.path_to(self, other)
         else:
