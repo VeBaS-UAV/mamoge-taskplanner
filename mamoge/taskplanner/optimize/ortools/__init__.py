@@ -12,6 +12,8 @@ import logging
 logging.getLogger().addHandler(logging.StreamHandler())
 logging.getLogger().setLevel(logging.DEBUG)
 
+import time
+
 class ORTaskOptimizer(TaskOptimizer):
 
 
@@ -34,7 +36,7 @@ class ORTaskOptimizer(TaskOptimizer):
 
 
     @abstractmethod
-    def solve(self, time=30, constraints=[]):
+    def solve(self, max_time=30, constraints=[]):
         """Solve the optimization problem"""
         # breakpoint()
         self.graph = mamogenx.G_problem_from_dag(self.graph)
@@ -59,9 +61,11 @@ class ORTaskOptimizer(TaskOptimizer):
             capacity = dim_args["capactity"] if dim_args["capacity"] is not None else 100000000
             fix_start_cumul_to_zero = True
 
+            # cost_matrix = mamogenx.G_cost_matrix(self.graph, lambda u,v: dim_cost_callback(self.graph, u,v))
+
             def cost_callback(from_index, to_index):
                 #TODO transform callback to matrix for better performance
-                #print("cost_callback", from_index, to_index, cost_callback)
+                # print("cost_callback", from_index, to_index, cost_callback)
                 from_node = self.manager.IndexToNode(from_index)
                 to_node = self.manager.IndexToNode(to_index)
                 return int(dim_cost_callback(self.graph, from_node, to_node))
@@ -92,7 +96,9 @@ class ORTaskOptimizer(TaskOptimizer):
             capacity = cap_args["capacity"] if cap_args["capacity"] is not None else 100000000
             fix_start_cumul_to_zero = True
 
+            # capacity_vector = mamogenx.G_cost_vector(self.graph, lambda u: cap_cost_callback(self.graph, u))
             def capacity_callback(index):
+                # print("capacity callback", index)
                 node = self.manager.IndexToNode(index)
                 return int(cap_cost_callback(self.graph, node))
 
@@ -143,13 +149,18 @@ class ORTaskOptimizer(TaskOptimizer):
             self.routing.AddDisjunction([self.manager.NodeToIndex(node)], penalty)
             pass
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-        # search_parameters.log_search = True
+        search_parameters.log_search = True
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
-        search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_MOST_CONSTRAINED_ARC)
+        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_MOST_CONSTRAINED_ARC)
+        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.BEST_INSERTION)
+        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.ALL_UNPERFORMED)
+        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.LOCAL_CHEAPEST_ARC)
         search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
-        search_parameters.time_limit.FromSeconds(time)
+        search_parameters.time_limit.FromSeconds(max_time)
+
 
         print("Solving tasks")
+        time.sleep(1)
         solution = self.routing.SolveWithParameters(search_parameters)
 
         print("Done", solution)

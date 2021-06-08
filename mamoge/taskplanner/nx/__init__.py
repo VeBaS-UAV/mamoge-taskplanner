@@ -303,6 +303,39 @@ def G_nxnodelist_to_subpaths(G:nx.Graph, tasklist:List[int]):
     return task_path
 
 
+def G_cost_matrix(G, cost_callback, cost_fallback=np.inf):
+    l = len(G)
+    cost_matrix = np.zeros((l,l))
+    #cost_matrix
+
+    for i, j in itertools.combinations(range(l), r=2):
+        d1 = cost_callback(i,j)
+
+        #check if there is a way to the other location
+        if (d1 is None):
+            d1 = cost_fallback
+
+        cost_matrix[i,j] = d1
+        cost_matrix[j,i] = d1
+
+    return cost_matrix
+
+def G_cost_vector(G, cost_callback, cost_fallback=np.inf):
+    l = len(G)
+    cost_vector = np.zeros(l)
+    #cost_vector
+
+    for i in range(l):
+        d1 = cost_callback(i)
+
+        #check if there is a way to the other location
+        if (d1 is None):
+            d1 = cost_fallback
+
+        cost_vector[i] = d1
+
+    return cost_vector
+
 def G_distance_matrix(G, distance_fallback=np.inf):
     l = len(G)
     distance_matrix = np.zeros((l,l))
