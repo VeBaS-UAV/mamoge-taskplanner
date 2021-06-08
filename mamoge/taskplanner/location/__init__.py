@@ -9,6 +9,23 @@ from mamoge.taskplanner import nx as mamogenx
 
 # %%
 
+def cached_result(func):
+    # print("check cache", func)
+
+    cache = {}
+    def inner(*args, **kw_args):
+        key = str((args, kw_args))
+        # print("cahce check", key)
+        if key in cache:
+            # print("cache hit")
+            return cache[key]
+            # return func(*args, **kw_args)
+
+        result = func(*args, **kw_args)
+        cache[key] = result
+        return result
+    return inner
+
 class Location:
     """Represent an abstract location and define some common method defintions."""
 
@@ -118,6 +135,7 @@ class GPSLocation(Location):
     def as_tuple(self) -> tuple:
         return (self.longitude, self.latitude)
 
+    @cached_result
     def distance_to(self, other: "GPSLocation") -> float:
         """Return the distance between two gps position, using geopy library and WGS84 ellipsoid"""
         return gps_distance.distance(self.latlon(), other.latlon()).meters
@@ -143,7 +161,6 @@ class GPSCartesianLocation(GPSLocation):
 
     def __repr__(self):
         return f"GPSCartesianLocation({self.latitude},{self.longitude},{self.altitude},{self._x_init},{self._y_init})"
-
 
 
 
@@ -184,6 +201,7 @@ class NXLocation(GraphLocation):
 
         return (None, None)
 
+    @cached_result
     def distance_to(self, other: "NXLocation") -> float:
         """Return the distance to the next nx location as the distance along the path to the other location in the base graph"""
         path = self.path_to(other)
@@ -200,6 +218,7 @@ class NXLocation(GraphLocation):
 
         return dist#len(path)
 
+    @cached_result
     def path_to(self, other: "NXLocation", weight="length") -> list[Any]:
         """Return the path to the other node using astar algorithm.
         """
@@ -230,7 +249,8 @@ class NXLayerLocation(NXLocation):
             return NXLocation.distance_to(self, other)
         else:
             return None
-        
+
+    @cached_result
     def path_to(self, other:"NXLayerLocation"):
         #return NXLocation.path_to(self, other)
         if self.G.has_edge(self.id, other.id):
