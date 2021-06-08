@@ -18,9 +18,9 @@ def G_draw_taskgraph_w_pos_location(G: nx.Graph):
     return G_draw_taskgraph(G, pos=pos)
 
 def G_draw_taskgraph(G: nx.Graph, pos=None) -> None:
-    fig = matplotlib.pyplot.gcf()
-    fig.set_size_inches(18.5, 10.5)
     """Plot a task graph using location and distance attributes"""
+    fig = matplotlib.pyplot.gcf()
+    fig.set_size_inches(12.5, 8.5)
 #    if pos is None:
 #        pos = {n:G.nodes[n]["location"] for n in G.nodes}
 

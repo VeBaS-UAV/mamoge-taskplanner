@@ -1,6 +1,6 @@
 from abc import abstractmethod
-from mamoge.taskplanner.optimize.ortools import ORTaskOptimizer
 import networkx as nx
+import mamoge.taskplanner.nx as mamogenx
 
 class TaskOptimizer:
 
@@ -17,5 +17,4 @@ class TaskOptimizer:
     @abstractmethod
     def solve(self, time=30, constraints=[]):
         """Solve the optimization problem"""
-        self.impl.set_graph(self.graph)
-        return self.impl.solve(time, constrains=constraints)
+        raise "solve not implemented"
