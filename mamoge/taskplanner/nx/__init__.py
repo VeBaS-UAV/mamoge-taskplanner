@@ -80,13 +80,30 @@ def G_distance_manhatten(G: nx.Graph, i:Any, j:Any, distance_attribute="location
 
     return float(np.abs(l1-l2).sum())
 
-def G_distance_location(G: nx.Graph, i:Any, j:Any):
+def G_distance_location(G: nx.Graph, i:Any, j:Any, fallback=None):
     location_i = G.nodes[i]["location"]
 
     location_j = G.nodes[j]["location"]
 
-    return location_i.distance_to(location_j)
+    distance = location_i.distance_to(location_j)
 
+    if distance is None:
+        return fallback
+    return distance
+
+def G_time_callback(G, u, v, velocity, fallback=24*60*360):
+    try:
+        distance = G_distance_location(G, u, v)
+
+        if(distance is None):
+            return fallback
+
+        time = distance / velocity
+
+        return time
+    except Exception as e:
+        print("Exception", e)
+        return 10000000
 
 def G_first(G:nx.Graph):
     return [n for n in G.nodes if len(list(G.predecessors(n)))==0][0]
@@ -133,24 +150,42 @@ def G_problem_from_dag(G:nx.Graph) -> nx.Graph:
 
     return Gn
 
-def G_descendent_constrains(G):
+class TaskConstraint():
+
+    def __init__(self, u:int, v:int, dimension:str=None, **constraint_args):
+        self.u = u
+        self.v = v
+        self.dimension = dimension
+        self.kw_args = constraint_args
+        pass
+
+    def __repr__(self):
+        return f"TaskConstraint({self.u}, {self.v}, dimension:{self.dimension}, {self.kw_args}"
+
+def G_descendent_constrains(G, kw_args_callback=None):
     first, last = G_first(G), G_last(G)
 
     constrains = []
-    for n in G.nodes:
+    for u in G.nodes:
 
-        if n in (first, last):
+        if u in (first, last):
             continue
 
-        desc = nx.algorithms.dag.descendants(G, n)
+        desc = nx.algorithms.dag.descendants(G, u)
 
-        for m in desc:
-            if m in (first, last):
+        for v in desc:
+            if v in (first, last):
                 continue
-            constrains.append((n,m))
+
+            if (kw_args_callback is not None):
+                kw_args = kw_args_callback(u,v)
+                if kw_args is not None:
+                    constrains.append(TaskConstraint(u,v, **kw_args))
+            else:
+                constrains.append(TaskConstraint(u,v))
+
 
     return constrains
-
 
 
 def G_lookup_edge(G:nx.Graph, **query):

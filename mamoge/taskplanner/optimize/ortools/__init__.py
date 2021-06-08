@@ -23,61 +23,15 @@ class ORTaskOptimizer(TaskOptimizer):
         self.vel_meter_per_sec = 1 # / 3.6 # 6km/h
         #
         self.dimensions = {}
+        self.capacities = {}
         pass
 
-    def add_dimension(self, name:str, cost_callback:Callable[int, int], capacity=None, slack=0):
+    def add_dimension(self, name:str, cost_callback:Callable[[nx.Graph, int, int],int], capacity=None, slack=0):
         self.dimensions[name] = dict(cost_callback=cost_callback, capacity=capacity, slack=slack)
 
-    # def time_matrix_callback(self, D, from_index, to_index):
-    #     # print("Travel cost", from_index, to_index)
-    #     try:
-    #         from_node = self.manager.IndexToNode(from_index)
-    #         to_node = self.manager.IndexToNode(to_index)
+    def add_capacity(self, name:str, capacity_callback:Callable[[nx.Graph,int],int], capacity=None, slack=0):
+        self.capacities[name]= dict(capacity_callback=capacity_callback, capacity=capacity, slack=slack)
 
-    #         t = (from_node, to_node)
-
-    #         dist = D[from_node, to_node] / 100
-
-    #         if (dist < 0.001):
-    #             return 7777 * 1000
-    #         #if(t in [(2,1), (2,4)]):
-    #         #    print("Time_matrix_callback", from_index, to_index, dist)
-
-    #         return dist / self.vel_meter_per_sec
-
-    #     except Exception as e:
-    #         print("time matrix callback error", from_index, to_index, e)
-
-    #         return 6666 * 1000
-
-    # def time_cost_per_node(self, D, node_index):
-    #     # print("cost per node", node_index)
-    #     #TODO get from graph
-    #     return 3 * 60 # 3min
-
-
-    # def time_cost_callback(self, D, from_index, to_index):
-
-    #     try:
-    #             # if(from_index == 0):
-    #             # print("Time_cost_callback", from_index, to_index)
-    #         travel_time =  self.time_matrix_callback(D, from_index, to_index)
-    #         service_time = self.time_cost_per_node(D, to_index)
-
-    #         if(np.isinf(travel_time)):
-    #             return 9999 * 1000
-
-    #         cost =  int(travel_time + service_time)
-
-    #         t = (from_index, to_index)
-
-    #     #mmininif(t in [(0,1), (1,2), (2,3), (3,4), (4,5), (5,6), (6,7)]):
-    #         #if(t in [(0,1), (1,2), (2,3), (2,4), (4,5), (3,5), (3,4), (4,3)]):
-    #         #print("Time_cost_callback", from_index, to_index, cost, travel_time, service_time)
-    #         return cost
-    #     except Exception as e:
-    #         print("error",e)
-    #        return 8888 * 1000
 
     @abstractmethod
     def solve(self, time=30, constraints=[]):
@@ -130,6 +84,28 @@ class ORTaskOptimizer(TaskOptimizer):
             dimension = self.routing.GetDimensionOrDie(dim_name)
             dimension.SetGlobalSpanCostCoefficient(1)
 
+        for cap_name, cap_args in self.capacities.items():
+            self.logger.info("Adding capacity dimension {cap_name} with args {cap_args}")
+
+            cap_cost_callback = cap_args["capacity_callback"]
+            slack = cap_args["slack"] if cap_args["slack"] is not None else 0
+            capacity = cap_args["capacity"] if cap_args["capacity"] is not None else 100000000
+            fix_start_cumul_to_zero = True
+
+            def capacity_callback(index):
+                node = self.manager.IndexToNode(index)
+                return int(cap_cost_callback(self.graph, node))
+
+            capacity_callback_index = self.routing.RegisterUnaryTransitCallback(capacity_callback)
+
+            self.routing.AddDimensionWithVehicleCapacity(
+                capacity_callback_index,
+                slack,
+                [capacity]*num_routes,
+                fix_start_cumul_to_zero,
+                cap_name
+            )
+
         for constraint in constraints:
             u = constraint.u
             v = constraint.v
@@ -160,7 +136,12 @@ class ORTaskOptimizer(TaskOptimizer):
                 self.routing.solver().Add(constrain_arg)
                 #print("Adding max constraint", u,v,dim_str, min_value)
 
-
+        # Allow to drop nodes.
+        penalty = 24*60*60
+        for node in range(1, num_nodes-1):
+            # print("Add penality", node)
+            self.routing.AddDisjunction([self.manager.NodeToIndex(node)], penalty)
+            pass
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
         # search_parameters.log_search = True
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
