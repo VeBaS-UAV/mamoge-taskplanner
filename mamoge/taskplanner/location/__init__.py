@@ -14,12 +14,13 @@ def cached_result(func):
 
     cache = {}
     def inner(*args, **kw_args):
+        # breakpoint()
         key = str((args, kw_args))
         # print("cahce check", key)
         if key in cache:
             # print("cache hit")
             return cache[key]
-            # return func(*args, **kw_args)
+            #return func(*args, **kw_args)
 
         result = func(*args, **kw_args)
         cache[key] = result
@@ -241,10 +242,11 @@ class NXLayerLocation(NXLocation):
         NXLocation.__init__(self, G_base, **nx_args)
         self.id = id
         self.G = G_layer
-        
+
+    @cached_result
     def diststance_to(self, other:"NXLayerLocation"):
         #return NXLocation.distance_to(self, other)
-
+        # breakpoint()
         if self.G.has_edge(self.id, other.id):
             return NXLocation.distance_to(self, other)
         else:
@@ -261,7 +263,7 @@ class NXLayerLocation(NXLocation):
     def __repr__(self):
         bn = self.base_node()
 
-        return f"NXLayerLocation({self.G_base},Base Ref: {self.nx_args}, {bn})"
+        return f"NXLayerLocation({self.id}, {self.G_base},Base Ref: {self.nx_args}, {bn})"
 
 LocationBuilder.add_locationclass("cartesian", CartesianLocation)
 LocationBuilder.add_locationclass("gps", GPSLocation)

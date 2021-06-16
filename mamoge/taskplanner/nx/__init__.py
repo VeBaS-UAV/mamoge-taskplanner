@@ -8,6 +8,8 @@ import functools
 import numpy as np
 import itertools
 
+from multiprocessing import Pool
+
 def G_draw_taskgraph_w_pos_layer(G: nx.Graph):
     pos = nx.drawing.layout.multipartite_layout(G, subset_key="layer")
     return G_draw_taskgraph(G, pos=pos)
@@ -91,7 +93,7 @@ def G_distance_location(G: nx.Graph, i:Any, j:Any, fallback=None):
         return fallback
     return distance
 
-def G_time_callback(G, u, v, velocity, fallback=24*60*360):
+def G_time_callback(G, u, v, velocity, fallback=24*60*60*360):
     try:
         distance = G_distance_location(G, u, v)
 
@@ -116,7 +118,7 @@ def G_last(G:nx.Graph):
 def G_problem_from_dag(G:nx.Graph) -> nx.Graph:
     """Return a graph representing the problem for a task dag"""
 
-    #Gn = nx.DiGraph()
+    # Gn = nx.DiGraph()
     Gn = G.copy()
     for node, anodes in G.adjacency():
         #print("it node", node, G.nodes[node])
@@ -144,6 +146,7 @@ def G_problem_from_dag(G:nx.Graph) -> nx.Graph:
             l1 = Gn.nodes[node]["location"]
             l2 = Gn.nodes[n]["location"]
 
+            # edge_args = Gn.edges[(node,n)]
             # TODO do we need a distance clalculation here?
             #Gn.add_edge(node, n, distance=l1.distance_to(l2))
             Gn.add_edge(node, n)
@@ -196,9 +199,9 @@ def G_lookup_edge(G:nx.Graph, **query):
         else:
             query_lambda = query_value
 
-        for e,d in G.edges(data=True):
+        for u,v,d in G.edges(data=True):
             if(query_key in d and query_lambda(d[query_key])):
-                result.append(e)
+                result.append((u,v,d))
 
     return result
 
@@ -303,22 +306,6 @@ def G_nxnodelist_to_subpaths(G:nx.Graph, tasklist:List[int]):
     return task_path
 
 
-def G_cost_matrix(G, cost_callback, cost_fallback=np.inf):
-    l = len(G)
-    cost_matrix = np.zeros((l,l))
-    #cost_matrix
-
-    for i, j in itertools.combinations(range(l), r=2):
-        d1 = cost_callback(i,j)
-
-        #check if there is a way to the other location
-        if (d1 is None):
-            d1 = cost_fallback
-
-        cost_matrix[i,j] = d1
-        cost_matrix[j,i] = d1
-
-    return cost_matrix
 
 def G_cost_vector(G, cost_callback, cost_fallback=np.inf):
     l = len(G)
@@ -355,3 +342,26 @@ def G_distance_matrix(G, distance_fallback=np.inf):
         distance_matrix[j,i] = d1
 
     return distance_matrix
+
+
+def G_cost_matrix(G, cost_callback, cost_fallback=np.inf):
+    l = len(G)
+    cost_matrix = np.zeros((l,l))
+    #cost_matrix
+
+    with Pool(5) as mp:
+        results = mp.map(cost_callback, itertools.combinations(range(l), r=2))
+
+    for ij, (i,j) in enumerate(itertools.combinations(range(l), r=2)):
+        d1 = int(results[ij])
+    #for i, j in itertools.combinations(range(l), r=2):
+    #    d1 = cost_callback(i,j)
+
+        #check if there is a way to the other location
+        if (d1 is None):
+            d1 = cost_fallback
+
+        cost_matrix[i,j] = d1
+        cost_matrix[j,i] = d1
+
+    return cost_matrix

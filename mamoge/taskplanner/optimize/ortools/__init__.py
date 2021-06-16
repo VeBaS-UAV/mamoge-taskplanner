@@ -9,7 +9,9 @@ from typing import Callable
 from mamoge.taskplanner.optimize import TaskOptimizer
 import logging
 
-logging.getLogger().addHandler(logging.StreamHandler())
+#logging.getLogger().removeHandler()
+#[logging.getLogger().removeHandler(h) for h in logging.getLogger().handlers]
+#logging.getLogger().addHandler(logging.StreamHandler())
 logging.getLogger().setLevel(logging.DEBUG)
 
 import time
@@ -49,8 +51,8 @@ class ORTaskOptimizer(TaskOptimizer):
 
         self.manager = pywrapcp.RoutingIndexManager(num_nodes, num_routes, [node_start],[node_end])
         routing_parameters = pywrapcp.DefaultRoutingModelParameters()
-        #routing_parameters.solver_parameters.trace_propagation = True
-        #routing_parameters.solver_parameters.trace_search = True
+        # routing_parameters.solver_parameters.trace_propagation = True
+        # routing_parameters.solver_parameters.trace_search = True
         self.routing = pywrapcp.RoutingModel(self.manager, routing_parameters)
 
         has_arc_def = False
@@ -58,7 +60,7 @@ class ORTaskOptimizer(TaskOptimizer):
             self.logger.info(f"Adding dimension {dim_name} with args {dim_args}")
             dim_cost_callback = dim_args["cost_callback"]
             slack = dim_args["slack"] if dim_args["slack"] is not None else 0
-            capacity = dim_args["capactity"] if dim_args["capacity"] is not None else 100000000
+            capacity = dim_args["capacity"] if dim_args["capacity"] is not None else 300000000
             fix_start_cumul_to_zero = True
 
             # cost_matrix = mamogenx.G_cost_matrix(self.graph, lambda u,v: dim_cost_callback(self.graph, u,v))
@@ -82,14 +84,14 @@ class ORTaskOptimizer(TaskOptimizer):
             self.routing.AddDimension(
                    callback_index,
                    slack,
-                    capacity,
+                   capacity,
                    fix_start_cumul_to_zero,
                    dim_name)
             dimension = self.routing.GetDimensionOrDie(dim_name)
             dimension.SetGlobalSpanCostCoefficient(1)
 
         for cap_name, cap_args in self.capacities.items():
-            self.logger.info("Adding capacity dimension {cap_name} with args {cap_args}")
+            self.logger.info(f"Adding capacity dimension {cap_name} with args {cap_args}")
 
             cap_cost_callback = cap_args["capacity_callback"]
             slack = cap_args["slack"] if cap_args["slack"] is not None else 0
@@ -112,6 +114,9 @@ class ORTaskOptimizer(TaskOptimizer):
                 cap_name
             )
 
+            dimension = self.routing.GetDimensionOrDie(cap_name)
+            dimension.SetGlobalSpanCostCoefficient(1)
+
         for constraint in constraints:
             u = constraint.u
             v = constraint.v
@@ -119,7 +124,7 @@ class ORTaskOptimizer(TaskOptimizer):
             first_index = self.manager.NodeToIndex(u)
             second_index = self.manager.NodeToIndex(v)
             # same vehicle for every node in the sequence
-            self.routing.solver().Add(self.routing.VehicleVar(first_index) == self.routing.VehicleVar(second_index))
+            #self.routing.solver().Add(self.routing.VehicleVar(first_index) == self.routing.VehicleVar(second_index))
 
             kw_args = constraint.kw_args
 
@@ -129,7 +134,7 @@ class ORTaskOptimizer(TaskOptimizer):
                 #TODO dynamic select dimension
                 min_value = kw_args["min"]
                 dim_str = constraint.dimension
-                constrain_arg = dimension.CumulVar(first_index) + min_value <= dimension.CumulVar(second_index)
+                constrain_arg = (dimension.CumulVar(first_index) + min_value) <= dimension.CumulVar(second_index)
                 self.routing.solver().Add(constrain_arg)
                 #print("Adding min constraint", u,v,dim_str, min_value)
 
@@ -138,30 +143,65 @@ class ORTaskOptimizer(TaskOptimizer):
                 #TODO dynamic select dimension
                 max_value = kw_args["max"]
                 dim_str = constraint.dimension
-                constrain_arg = dimension.CumulVar(first_index) + max_value <= dimension.CumulVar(second_index)
+                constrain_arg = (dimension.CumulVar(first_index) + max_value) <= dimension.CumulVar(second_index)
                 self.routing.solver().Add(constrain_arg)
                 #print("Adding max constraint", u,v,dim_str, min_value)
-
+                raise "Not implemented"
         # Allow to drop nodes.
         penalty = 24*60*60
-        for node in range(1, num_nodes-1):
-            # print("Add penality", node)
-            self.routing.AddDisjunction([self.manager.NodeToIndex(node)], penalty)
+        self.logger.info("Adding Penalty")
+        dimension = self.routing.GetDimensionOrDie("time")
+        for node in range(1, num_nodes -1):
+            print("Add penality", node, self.manager.NodeToIndex(node))
+            i = self.manager.NodeToIndex(node)
+            #self.routing.AddDisjunction([i], penalty)
+            slackVar = dimension.SlackVar(i)
+            #slackVar.SetMax(1200)
+            self.routing.AddToAssignment(slackVar)
             pass
+
+
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-        search_parameters.log_search = True
+        # search_parameters.log_search = True
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
-        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_MOST_CONSTRAINED_ARC)
+        search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_MOST_CONSTRAINED_ARC)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.BEST_INSERTION)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.ALL_UNPERFORMED)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.LOCAL_CHEAPEST_ARC)
-        search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
+        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.GLOBAL_CHEAPEST_ARC)
+        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.FIRST_UNBOUND_MIN_VALUE)
+        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.SWEEP)
+
+        # search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
+        # search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.TABU_SEARCH)
         search_parameters.time_limit.FromSeconds(max_time)
 
+        # init_route =[[1, 2,3,4,5,6]]
+        # init_route =[[0, 9, 7, 19, 17, 21]]
+        # init_route =[[0, 9, 7, 17, 19, 21]]
+        # init_route =[[1,2,3,4,5,6]]
+        # init_route =[[1,2,3,4,6]]
+        # init_route =[list(range(1,num_nodes-1))]
 
+        # print('raw init solution', init_route)
+        # initial_solution = self.routing.ReadAssignmentFromRoutes(init_route, True)
+
+        # print("Initial Solution", initial_solution)
+        # breakpoint()
+        # if initial_solution:
+            # self.extract_solution(num_routes, self.manager, self.routing, initial_solution)
+            # return [], []
+        # else:
+            # return [],[]
+            # pass
         print("Solving tasks")
         time.sleep(1)
-        solution = self.routing.SolveWithParameters(search_parameters)
+
+        initial_solution = None
+        if initial_solution:
+            solution = self.routing.SolveFromAssignmentWithParameters(initial_solution, search_parameters)
+        else:
+            solution = self.routing.SolveWithParameters(search_parameters)
 
         print("Done", solution)
 
