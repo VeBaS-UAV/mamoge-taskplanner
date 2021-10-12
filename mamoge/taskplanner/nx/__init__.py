@@ -83,6 +83,8 @@ def G_distance_manhatten(G: nx.Graph, i:Any, j:Any, distance_attribute="location
     return float(np.abs(l1-l2).sum())
 
 def G_distance_location(G: nx.Graph, i:Any, j:Any, fallback=None):
+    # print("G_distance_location", G, i, j)
+    # print(G.nodes)
     location_i = G.nodes[i]["location"]
 
     location_j = G.nodes[j]["location"]
@@ -97,6 +99,7 @@ def G_time_callback(G, u, v, velocity, fallback=24*60*60*360):
     try:
         distance = G_distance_location(G, u, v)
 
+        print(u,v, distance)
         if(distance is None):
             return fallback
 
@@ -349,19 +352,31 @@ def G_cost_matrix(G, cost_callback, cost_fallback=np.inf):
     cost_matrix = np.zeros((l,l))
     #cost_matrix
 
+    ij_args= list(itertools.combinations(range(l), r=2))
+    # print(list(ij_args))
     with Pool(5) as mp:
-        results = mp.map(cost_callback, itertools.combinations(range(l), r=2))
+        # results = mp.map(functools.partial(cost_callback, G), ij_args)
+        results = mp.map(functools.partial(multiprocessing_partial, cost_callback, G), ij_args)
+        # results = mp.map(cost_callback, ij_args)
 
-    for ij, (i,j) in enumerate(itertools.combinations(range(l), r=2)):
-        d1 = int(results[ij])
-    #for i, j in itertools.combinations(range(l), r=2):
-    #    d1 = cost_callback(i,j)
+    for ij, (i,j) in enumerate(ij_args):
+        d1 = results[ij]
+    # for i, j in itertools.combinations(range(l), r=2):
+        # d1 = cost_callback((i,j))
 
         #check if there is a way to the other location
         if (d1 is None):
             d1 = cost_fallback
-
+        else:
+            d1 = int(d1)
         cost_matrix[i,j] = d1
         cost_matrix[j,i] = d1
 
     return cost_matrix
+
+def log_args(*args, **kw_args):
+    print("log_args", args, kw_args)
+    return args, kw_args
+
+def multiprocessing_partial(func, static_args, dynamic_args):
+        return func(*[static_args], *dynamic_args)

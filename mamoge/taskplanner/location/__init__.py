@@ -33,11 +33,10 @@ class Location:
     def __init__(self, type:str):
         self.type = type
 
-    @abstractmethod
-    def as_dict(self):
-        """Return location content as dict
-        """
-        pass
+    def as_dict(self) -> dict:
+        return dict(type=self.type,
+                    x=self.x, y=self.y, z=self.z,
+                    latitude=self.latitude, longitude=self.longitude, altitude=self.altitude)
 
     @abstractmethod
     def distance_to(self, other:"Location"):
@@ -64,6 +63,29 @@ class Location:
         """
         return self.as_tuple()[1]
 
+    @property
+    def z(self):
+        """Return the y coordinate of the location.
+        In case of global position, x is longitude and y the latitude value
+        """
+        return self.as_tuple()[2]
+
+    @property
+    def latitude(self):
+        return self.as_tuple()[1]
+
+    @property
+    def longitude(self):
+        return self.as_tuple()[0]
+
+    @property
+    def altitude(self):
+        return self.as_tuple()[2]
+
+    def latlon(self):
+        return self.latitude, self.longitude
+
+# __getitem__()
 class GraphLocation(Location):
     """Represent a Location in a Graph. Thus a :method `path_to` between two locations
     """
@@ -98,13 +120,12 @@ class CartesianLocation(Location):
     """Represent a Location in cartesian space
     """
 
-    def __init__(self, x, y, distance_func=np.linalg.norm):
+    def __init__(self, x, y, z=0, distance_func=np.linalg.norm):
         Location.__init__(self, "cartesian")
         self._x = x
         self._y = y
+        self._z = z
         self._distance_func = distance_func
-    def as_dict(self) -> dict:
-        return dict(type=self.type, x=self.x, y=self.y)
 
     def distance_to(self, other: Location) -> float:
         dx = self.x - other.x
@@ -115,26 +136,22 @@ class CartesianLocation(Location):
 
 
     def __repr__(self):
-        return f"CartesianLocation({self.x},{self.y})"
+        return f"CartesianLocation({self.x},{self.y}, {self.z})"
 
     def as_tuple(self):
-        return self._x, self._y
+        return self._x, self._y, self._z
 
 class GPSLocation(Location):
     """Represent a global location in lat and lon coordinates"""
 
     def __init__(self, latitude, longitude, altitude=None):
        Location.__init__(self, "gps")
-       self.latitude = latitude
-       self.longitude = longitude
-       self.altitude = altitude
-
-    def as_dict(self) -> dict:
-        return dict(type=self.type, latitude=self.latitude,
-                    longitude=self.longitude, altitude=self.altitude)
+       self._latitude = latitude
+       self._longitude = longitude
+       self._altitude = altitude
 
     def as_tuple(self) -> tuple:
-        return (self.longitude, self.latitude)
+        return (self._longitude, self._latitude, self._altitude)
 
     @cached_result
     def distance_to(self, other: "GPSLocation") -> float:
@@ -142,11 +159,11 @@ class GPSLocation(Location):
         return gps_distance.distance(self.latlon(), other.latlon()).meters
 
     def __repr__(self):
-        return f"GPSLocation({self.latitude},{self.longitude},{self.altitude})"
+        return f"GPSLocation({self._latitude},{self._longitude},{self._altitude})"
 
-    def latlon(self):
-        """Return the lat and longitude values as a tuple"""
-        return self.latitude, self.longitude
+    def location(self):
+        """Return the lat and _longitude values as a tuple"""
+        return self._latitude, self._longitude, self._altitude
 
 
 class GPSCartesianLocation(GPSLocation):
@@ -189,10 +206,10 @@ class NXLocation(GraphLocation):
         return None
 
     def as_dict(self) -> dict:
-        base_id = self.base_node()
+        base_id = self.base_node_id()
         base_node = self.G_base.nodes[base_id]
 
-        return {**dict(type=self.type), **self.nx_args, **base_node}
+        return {**GraphLocation.as_dict(self), **self.nx_args, **base_node}
 
     def as_tuple(self) -> tuple:
         base_node = self.base_node()
@@ -238,16 +255,20 @@ class NXLocation(GraphLocation):
 
 class NXLayerLocation(NXLocation):
     
-    def __init__(self, id, G_layer:nx.Graph, G_base:nx.Graph, **nx_args):
+    def __init__(self, layer_id:Any, base_id:Any, G_layer:nx.Graph, G_base:nx.Graph, **nx_args):
         NXLocation.__init__(self, G_base, **nx_args)
-        self.id = id
+        self.layer_id = layer_id
+        self.base_id = base_id
         self.G = G_layer
 
     @cached_result
     def diststance_to(self, other:"NXLayerLocation"):
         #return NXLocation.distance_to(self, other)
         # breakpoint()
-        if self.G.has_edge(self.id, other.id):
+        if (self.layer_id == other.layer_id):
+            return 0
+
+        if self.G.has_edge(self.layer_id, other.layer_id):
             return NXLocation.distance_to(self, other)
         else:
             return None
@@ -255,7 +276,9 @@ class NXLayerLocation(NXLocation):
     @cached_result
     def path_to(self, other:"NXLayerLocation"):
         #return NXLocation.path_to(self, other)
-        if self.G.has_edge(self.id, other.id):
+        if (self.layer_id == other.layer_id):
+            return [self.layer_id]
+        if self.G.has_edge(self.layer_id, other.layer_id):
             return NXLocation.path_to(self, other)
         else:
             return None
@@ -263,7 +286,13 @@ class NXLayerLocation(NXLocation):
     def __repr__(self):
         bn = self.base_node()
 
-        return f"NXLayerLocation({self.id}, {self.G_base},Base Ref: {self.nx_args}, {bn})"
+        # return f"NXLayerLocation({self.id}, {self.G_base},Base Ref: {self.nx_args}, {bn})"
+        return f"NXLayerLocation({self.layer_id}->{self.base_id}, {bn})"
+
+    def as_dict(self):
+        return {**NXLocation.as_dict(self), **self.base_node()}
+
+
 
 LocationBuilder.add_locationclass("cartesian", CartesianLocation)
 LocationBuilder.add_locationclass("gps", GPSLocation)

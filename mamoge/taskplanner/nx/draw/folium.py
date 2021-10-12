@@ -12,7 +12,19 @@ import mamoge.taskplanner.nx as mamogenx
 def draw_folium_new_map(G:nx.Graph):
         origin = np.array(list(nx.get_node_attributes(G, "y").values())).mean(), \
                     np.array(list(nx.get_node_attributes(G, "x").values())).mean()
-        folium_map=folium.Map(location=origin, zoom_start=14)
+        folium_map=folium.Map(location=origin, zoom_start=14,  max_native_zoom=19, max_zoom = 29)
+
+        # folium.TileLayer('openstreetmap', max_native_zoom=19, max_zoom=29).add_to(folium_map)
+        # folium.TileLayer('stamen terrain', max_native_zoom=17, max_zoom=29).add_to(folium_map)
+        folium.TileLayer(
+                        tiles = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                        attr = 'Esri',
+                        name = 'Esri Satellite',
+                        overlay = False,
+                        control = True,
+                        max_native_zoom=17,
+                        max_zoom=25,
+                ).add_to(folium_map)
 
         #folium_map.add_child(folium.LayerControl())
         folium_map.add_child(folium.plugins.MeasureControl())
