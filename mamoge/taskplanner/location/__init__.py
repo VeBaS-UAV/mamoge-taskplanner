@@ -2,7 +2,7 @@ import numpy as np
 import networkx as nx
 
 from abc import abstractmethod
-from typing import Any
+from typing import Any, List
 
 from geopy import distance as gps_distance
 from mamoge.taskplanner import nx as mamogenx
@@ -237,7 +237,7 @@ class NXLocation(GraphLocation):
         return dist#len(path)
 
     @cached_result
-    def path_to(self, other: "NXLocation", weight="length") -> list[Any]:
+    def path_to(self, other: "NXLocation", weight="length") -> List[Any]:
         """Return the path to the other node using astar algorithm.
         """
         l1 = self.base_node_id()

@@ -30,7 +30,7 @@ def DAG_all_parallel(G_routemap, base_id, nodes):
     for n_id, n in nodes:
         n_id
         G_ref = G_routemap.nodes[n_id]
-        task_id = f"Task_{n_id}"
+        task_id = f"{n_id}"
         G_tasks.add_node(task_id, name=task_id, layer=1, location=NXLayerLocation(layer_id=task_id, base_id=n_id, G_layer=G_tasks, G_base=G_routemap, name=G_ref["name"]))
         G_tasks.add_edge(task_base_id,task_id)
 

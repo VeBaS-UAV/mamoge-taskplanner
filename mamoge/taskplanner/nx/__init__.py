@@ -48,7 +48,7 @@ def G_draw_taskgraph(G: nx.Graph, pos=None) -> None:
         #TODO check for distance or length or weight attribute
         pass
 
-def G_draw_locationgraph(G: nx.Graph, path:list[Any] = None):
+def G_draw_locationgraph(G: nx.Graph, path:List[Any] = None):
     """Plot a task graph using location and distance attributes"""
 
     fig,ax = plt.subplots(1,1, figsize=(10,5))
