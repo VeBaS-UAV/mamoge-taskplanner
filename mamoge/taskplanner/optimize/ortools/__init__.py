@@ -169,7 +169,7 @@ class ORTaskOptimizer():
                 min_value = kw_args["min"]
                 dim_str = constraint.dimension
                 constrain_arg = (dimension.CumulVar(first_index) + min_value) <= dimension.CumulVar(second_index)
-                # self.routing.solver().Add(constrain_arg)
+                self.routing.solver().Add(constrain_arg)
                 #print("Adding min constraint", u,v,dim_str, min_value)
 
 
@@ -188,9 +188,9 @@ class ORTaskOptimizer():
         for node in range(1, num_nodes -1):
             self.logger.debug(f"Add penality {node}, {self.manager.NodeToIndex(node)}")
             i = self.manager.NodeToIndex(node)
-            # self.routing.AddDisjunction([i], penalty)
+            self.routing.AddDisjunction([i], penalty)
             slackVar = dimension.SlackVar(i)
-            # self.routing.AddToAssignment(slackVar)
+            self.routing.AddToAssignment(slackVar)
             pass
 
         self.logger.info("Defining search parameters")
@@ -201,8 +201,8 @@ class ORTaskOptimizer():
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.BEST_INSERTION)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.ALL_UNPERFORMED)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.LOCAL_CHEAPEST_ARC)
-        search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.GLOBAL_CHEAPEST_ARC)
-        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.FIRST_UNBOUND_MIN_VALUE)
+        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.GLOBAL_CHEAPEST_ARC)
+        search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.FIRST_UNBOUND_MIN_VALUE)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.SWEEP)
 
         # search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
