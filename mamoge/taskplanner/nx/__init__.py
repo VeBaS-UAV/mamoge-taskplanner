@@ -42,7 +42,9 @@ def G_draw_taskgraph(G: nx.Graph, pos=None) -> None:
 
 
     try:
-        edge_dict = {w:G[w[0]][w[1]]['distance'] for w in G.edges}
+        edge_dict = {w:G[w[0]][w[1]] for w in G.edges}
+        # if len(edge_dict) >0:
+            # print(edge_dict)
         nx.draw_networkx_edge_labels(G,pos,edge_labels=edge_dict,font_color='red')
     except:
         #TODO check for distance or length or weight attribute
