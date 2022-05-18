@@ -275,7 +275,6 @@ class NXLayerLocation(NXLocation):
 
     @cached_result
     def path_to(self, other:"NXLayerLocation"):
-        #return NXLocation.path_to(self, other)
         if (self.layer_id == other.layer_id):
             return [self.layer_id]
         if self.G.has_edge(self.layer_id, other.layer_id):
@@ -286,7 +285,6 @@ class NXLayerLocation(NXLocation):
     def __repr__(self):
         bn = self.base_node()
 
-        # return f"NXLayerLocation({self.id}, {self.G_base},Base Ref: {self.nx_args}, {bn})"
         return f"NXLayerLocation({self.layer_id}->{self.base_id}, {bn})"
 
     def as_dict(self):

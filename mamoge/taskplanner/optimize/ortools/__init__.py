@@ -7,7 +7,7 @@ from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 import numpy as np
 from typing import Callable
-from mamoge.taskplanner.optimize import TaskOptimizer
+# from mamoge.taskplanner.optimize import TaskOptimizer
 import logging
 
 #logging.getLogger().removeHandler()
@@ -17,11 +17,12 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 import time
 
-class ORTaskOptimizer(TaskOptimizer):
+class ORTaskOptimizer():
 
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
+        self.graph = None
         self.manager: pywrapcp.RoutingIndexManager = None
         self.distance_callback_counter = 0
         self.distance_callback_counter_fail = 0
@@ -29,7 +30,9 @@ class ORTaskOptimizer(TaskOptimizer):
         #
         self.dimensions = {}
         self.capacities = {}
-        self.penalty_dimension = "steps"
+        self.penalty_dimension = "time"
+        # add default dimension for each step
+        # self.add_dimension("step", cost_callback=lambda G,u,v: 1)
         pass
 
     def add_dimension(self, name:str, cost_callback:Callable[[nx.Graph, int, int],int], capacity=None, slack=0):
@@ -74,7 +77,7 @@ class ORTaskOptimizer(TaskOptimizer):
 
             # cost_matrix = mamogenx.G_cost_matrix(self.graph, lambda u,v: dim_cost_callback(self.graph, u,v))
 
-            dim_matrix = np.zeros((len(self.graph), len(self.graph)))
+            dim_matrix = np.zeros((len(self.graph), len(self.graph)), dtype=int)
 
             def cost_callback(from_index, to_index):
                 #TODO transform callback to matrix for better performance
@@ -116,6 +119,8 @@ class ORTaskOptimizer(TaskOptimizer):
             dimension = self.routing.GetDimensionOrDie(dim_name)
             dimension.SetGlobalSpanCostCoefficient(1)
 
+        if len(self.capacities) == 0:
+            self.logger.info("No capacaties has been defined")
         for cap_name, cap_args in self.capacities.items():
             self.logger.info(f"Adding capacity dimension {cap_name} with args {cap_args}")
 
@@ -143,6 +148,9 @@ class ORTaskOptimizer(TaskOptimizer):
             dimension = self.routing.GetDimensionOrDie(cap_name)
             dimension.SetGlobalSpanCostCoefficient(1)
 
+        if len(constraints) == 0:
+            self.logger.info("No constraints has been defined")
+
         for constraint in constraints:
             u = constraint.u
             v = constraint.v
@@ -161,7 +169,7 @@ class ORTaskOptimizer(TaskOptimizer):
                 min_value = kw_args["min"]
                 dim_str = constraint.dimension
                 constrain_arg = (dimension.CumulVar(first_index) + min_value) <= dimension.CumulVar(second_index)
-                self.routing.solver().Add(constrain_arg)
+                # self.routing.solver().Add(constrain_arg)
                 #print("Adding min constraint", u,v,dim_str, min_value)
 
 
@@ -175,33 +183,36 @@ class ORTaskOptimizer(TaskOptimizer):
                 raise "Not implemented"
         # Allow to drop nodes.
         penalty = 24*60*60
-        self.logger.info("Adding Penalty")
+        self.logger.info(f"Adding Penalty to dimension {self.penalty_dimension}")
         dimension = self.routing.GetDimensionOrDie(self.penalty_dimension)
         for node in range(1, num_nodes -1):
             self.logger.debug(f"Add penality {node}, {self.manager.NodeToIndex(node)}")
             i = self.manager.NodeToIndex(node)
-            self.routing.AddDisjunction([i], penalty)
+            # self.routing.AddDisjunction([i], penalty)
             slackVar = dimension.SlackVar(i)
-            #slackVar.SetMax(1200)
-            self.routing.AddToAssignment(slackVar)
+            # self.routing.AddToAssignment(slackVar)
             pass
 
-
+        self.logger.info("Defining search parameters")
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-        # search_parameters.log_search = True
+        search_parameters.log_search = True
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_MOST_CONSTRAINED_ARC)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.BEST_INSERTION)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.ALL_UNPERFORMED)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.LOCAL_CHEAPEST_ARC)
-        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.GLOBAL_CHEAPEST_ARC)
-        search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.FIRST_UNBOUND_MIN_VALUE)
+        search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.GLOBAL_CHEAPEST_ARC)
+        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.FIRST_UNBOUND_MIN_VALUE)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.SWEEP)
 
         # search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
         # search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.TABU_SEARCH)
-        search_parameters.time_limit.FromSeconds(max_time)
+        # search_parameters.time_limit.FromSeconds(max_time)
 
+        # search_parameters.setLogSearch(True)
+        # search_parameters.setPrintAddedConstraints(True)
+        # search_parameters.setPrintModel(True)
+        # search_parameters.setProfilePropagation(True)
         # init_route =[[1, 2,3,4,5,6]]
         # init_route =[[0, 9, 7, 19, 17, 21]]
         # init_route =[[0, 9, 7, 17, 19, 21]]
@@ -220,6 +231,7 @@ class ORTaskOptimizer(TaskOptimizer):
         # else:
             # return [],[]
             # pass
+        print("start here 1")
         self.logger.info("Solving task ...")
         time.sleep(1)
 
@@ -231,14 +243,20 @@ class ORTaskOptimizer(TaskOptimizer):
 
         self.logger.info("Done")
 
+
         if solution is None:
+            self.logger.warn("Could not find any solution")
             return [], []
+
+        self.logger.info("Found solution")
+        self.logger.info(f"{solution}")
+        self.logger.info(f"num_route {num_routes}")
 
         result, meta =  self.extract_solution(num_routes, self.manager, self.routing, solution)
 
-        self.logger.debug(f"{result}")
+        self.logger.debug(f"Results {result}")
 
-        return [G_idx2node[n] for n in result[0]]
+        return [G_idx2node[n] for n in result[0]], meta
 
     def extract_values(self, solution, dim, index, prev_index, vehicle_id):
         results = {}
@@ -256,6 +274,22 @@ class ORTaskOptimizer(TaskOptimizer):
 
         return results
 
+    def print_solution(self, manager, routing, solution):
+        """Prints solution on console."""
+        print('Objective: {} miles'.format(solution.ObjectiveValue()))
+        index = routing.Start(0)
+        plan_output = 'Route for vehicle 0:\n'
+        route_distance = 0
+        while not routing.IsEnd(index):
+            plan_output += ' {} ->'.format(manager.IndexToNode(index))
+            previous_index = index
+            index = solution.Value(routing.NextVar(index))
+            print(f"prev index, index: {type(previous_index)}, {type(index)}")
+            route_distance += routing.GetArcCostForVehicle(previous_index, index, 0)
+        plan_output += ' {}\n'.format(manager.IndexToNode(index))
+        print(plan_output)
+        plan_output += 'Route distance: {}miles\n'.format(route_distance)
+
     def extract_solution(self, num_routes, manager, routing, solution):
         """Prints solution on console."""
         # print(f'Objective: {solution.ObjectiveValue()}')
@@ -268,7 +302,7 @@ class ORTaskOptimizer(TaskOptimizer):
 
         # max_route_distance = 0
         for vehicle_id in range(num_routes):
-            # print("Vehicle ID", vehicle_id)
+            print("Vehicle ID", vehicle_id)
             route = []
             route_meta = {}#[]
             index = routing.Start(vehicle_id)
@@ -282,12 +316,18 @@ class ORTaskOptimizer(TaskOptimizer):
                 # plan_output += ' {} -> '.format(manager.IndexToNode(index))
                 time_var  = time_dim.CumulVar(index)
                 #slack_var = time_dim.SlackVar(index)
-                #transit_var = time_dim.TransitVar(index)
+                # transit_var = time_dim.TransitVar(index)
 
+                print(f"time_var ", time_var)
+                print(f"index ", index)
+                print(f"prev_index ", prev_index)
+                print(f"vehicle_id ", vehicle_id)
+                #bis August Stunden gebucht hat, CTM bis Juni (sow wie wir)
+                # print(f"{solution}, {time_dim}, {index}, {prev_index}, {vehicle_id}")
                 route_meta[node] = self.extract_values(solution, time_dim, index, prev_index, vehicle_id)
 
                 #route_meta[node]["time"] = solution.Min(time_var), solution.Max(time_var)
-                #print("Transit var", transit_var, solution.Value(transit_var))
+                # print("Transit var", transit_var, solution.Value(transit_var))
                 #route_meta[node]["slack"] = slack_var.Min(), slack_var.Max()
                 #route_meta[node]["transit"] = transit_var.Min(), transit_var.Max()
                 #route_meta[node]["transit"] = solution.Min(transit_var), solution.Max(transit_var)
@@ -297,9 +337,11 @@ class ORTaskOptimizer(TaskOptimizer):
                     manager.IndexToNode(index), solution.Min(time_var),
                     solution.Max(time_var))
 
+                print(f"plan output {plan_output}")
                 prev_index = index
                 index = solution.Value(routing.NextVar(index))
 
+                print(f"next index {index}")
                 # route_distance += routing.GetArcCostForVehicle(
                     # previous_index, index, vehicle_id)
                     #

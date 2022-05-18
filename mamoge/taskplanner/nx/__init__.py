@@ -99,7 +99,7 @@ def G_time_callback(G, u, v, velocity, fallback=24*60*60*360):
     try:
         distance = G_distance_location(G, u, v)
 
-        print(u,v, distance)
+        # print(u,v, distance)
         if(distance is None):
             return fallback
 
