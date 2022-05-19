@@ -35,9 +35,9 @@ class ORTaskOptimizer():
         # self.add_dimension("step", cost_callback=lambda G,u,v: 1)
         pass
 
-    def add_dimension(self, name:str, cost_callback:Callable[[nx.Graph, int, int],int], capacity=None, slack=0):
+    def add_dimension(self, name:str, cost_callback:Callable[[nx.Graph, int, int],int], capacity=None, slack=0, demand_callback=None):
         self.logger.debug("adding dimension %s" , name)
-        self.dimensions[name] = dict(cost_callback=cost_callback, capacity=capacity, slack=slack)
+        self.dimensions[name] = dict(cost_callback=cost_callback, capacity=capacity, slack=slack, demand_callback=demand_callback)
 
     def add_capacity(self, name:str, capacity_callback:Callable[[nx.Graph,int],int], capacity=None, slack=0):
         self.capacities[name]= dict(capacity_callback=capacity_callback, capacity=capacity, slack=slack)
@@ -71,6 +71,7 @@ class ORTaskOptimizer():
         for dim_name, dim_args in self.dimensions.items():
             self.logger.info(f"Adding dimension {dim_name} with args {dim_args}")
             dim_cost_callback = dim_args["cost_callback"]
+            dim_demand_callback = dim_args["demand_callback"]
             slack = dim_args["slack"] if dim_args["slack"] is not None else 0
             capacity = dim_args["capacity"] if dim_args["capacity"] is not None else 300000000
             fix_start_cumul_to_zero = True
@@ -93,7 +94,10 @@ class ORTaskOptimizer():
                     val =  dim_cost_callback(self.graph, from_node, to_node)
                     # print("cost_callback", from_index, to_index, cost_callback, val)
 
-                    dim_matrix[from_index, to_index] = val
+
+                    node_time_demand = dim_demand_callback(self.graph, from_node)
+
+                    dim_matrix[from_index, to_index] = val + node_time_demand
 
                     return val
                 except Exception as e:
@@ -102,6 +106,7 @@ class ORTaskOptimizer():
                     return -1
 
             callback_index = self.routing.RegisterTransitCallback(cost_callback)
+
 
             if has_arc_def == False:
                 self.logger.info(f"Setting ArcCost to dimension {dim_name}")
@@ -116,8 +121,17 @@ class ORTaskOptimizer():
                    capacity,
                    fix_start_cumul_to_zero,
                    dim_name)
+
             dimension = self.routing.GetDimensionOrDie(dim_name)
             dimension.SetGlobalSpanCostCoefficient(1)
+
+
+            def demand_callback(from_index):
+                from_node = G_idx2node[self.manager.IndexToNode(from_index)]
+                return dim_demand_callback(self.graph, from_node)
+
+            # demand_callback_index = self.routing.RegisterUnaryTransitCallback(demand_callback)
+
 
         if len(self.capacities) == 0:
             self.logger.info("No capacaties has been defined")
@@ -207,7 +221,7 @@ class ORTaskOptimizer():
 
         # search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
         # search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.TABU_SEARCH)
-        # search_parameters.time_limit.FromSeconds(max_time)
+        search_parameters.time_limit.FromSeconds(max_time)
 
         # search_parameters.setLogSearch(True)
         # search_parameters.setPrintAddedConstraints(True)
@@ -263,13 +277,15 @@ class ORTaskOptimizer():
 
         cum = dim.CumulVar(index)
         results[self.penalty_dimension] = solution.Min(cum)#, solution.Max(cum)
+        results["demand"] = 0
         results["slack"] = 0
         results["transit"] = 0#dim.GetTransitValue(index)
         if(prev_index>=0):
             cum_prev = dim.CumulVar(prev_index)
             d_cost = solution.Min(cum) - solution.Min(cum_prev)#, solution.Max(cum) - solution.Max(cum_prev),
             # print("extract_values", dim, index, prev_index)
-            results["transit"] = dim.GetTransitValue(prev_index, index, vehicle_id)
+            results["demand"] = 3*60
+            results["transit"] = dim.GetTransitValue(prev_index, index, vehicle_id) - results["demand"]
             results["slack"] = d_cost - results["transit"]
 
         return results
@@ -318,10 +334,10 @@ class ORTaskOptimizer():
                 #slack_var = time_dim.SlackVar(index)
                 # transit_var = time_dim.TransitVar(index)
 
-                print(f"time_var ", time_var)
-                print(f"index ", index)
-                print(f"prev_index ", prev_index)
-                print(f"vehicle_id ", vehicle_id)
+                # print(f"time_var ", time_var)
+                # print(f"index ", index)
+                # print(f"prev_index ", prev_index)
+                # print(f"vehicle_id ", vehicle_id)
                 #bis August Stunden gebucht hat, CTM bis Juni (sow wie wir)
                 # print(f"{solution}, {time_dim}, {index}, {prev_index}, {vehicle_id}")
                 route_meta[node] = self.extract_values(solution, time_dim, index, prev_index, vehicle_id)
