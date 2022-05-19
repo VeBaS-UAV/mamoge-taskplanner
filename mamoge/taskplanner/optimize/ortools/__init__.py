@@ -44,12 +44,12 @@ class ORTaskOptimizer():
 
 
     @abstractmethod
-    def solve(self, max_time=30, constraints=[]):
+    def solve(self, max_time=30, num_routes=1, constraints=[]):
         """Solve the optimization problem"""
         # breakpoint()
         self.graph = mamogenx.G_problem_from_dag(self.graph)
         num_nodes = len(self.graph.nodes)
-        num_routes = 1
+        # num_routes = 1
         #print("Solving dag", self.dag)
         # node_start = mamogenx.G_first(self.graph)
         # node_end = mamogenx.G_last(self.graph)
@@ -191,12 +191,13 @@ class ORTaskOptimizer():
                 #TODO dynamic select dimension
                 max_value = kw_args["max"]
                 dim_str = constraint.dimension
-                constrain_arg = (dimension.CumulVar(first_index) + max_value) <= dimension.CumulVar(second_index)
+                constrain_arg = (dimension.CumulVar(first_index) + max_value) > dimension.CumulVar(second_index)
                 self.routing.solver().Add(constrain_arg)
                 #print("Adding max constraint", u,v,dim_str, min_value)
-                raise "Not implemented"
-        # Allow to drop nodes.
-        penalty = 24*60*60
+                # raise "Not implemented"
+
+        # Allow to drop nodes, penalty of 60min.
+        penalty = 60*60
         self.logger.info(f"Adding Penalty to dimension {self.penalty_dimension}")
         dimension = self.routing.GetDimensionOrDie(self.penalty_dimension)
         for node in range(1, num_nodes -1):

@@ -22,7 +22,7 @@ def G_draw_taskgraph_w_pos_location(G: nx.Graph):
 def G_draw_taskgraph(G: nx.Graph, pos=None) -> None:
     """Plot a task graph using location and distance attributes"""
     fig = matplotlib.pyplot.gcf()
-    fig.set_size_inches(12.5, 8.5)
+    fig.set_size_inches(18.5, 8.5)
 #    if pos is None:
 #        pos = {n:G.nodes[n]["location"] for n in G.nodes}
 
@@ -98,6 +98,7 @@ def G_distance_location(G: nx.Graph, i:Any, j:Any, fallback=None):
     return distance
 
 def G_time_callback(G, u, v, velocity, fallback=24*60*60*360):
+    '''calculate the time requirement based on distanve between u,v and given velocity'''
     try:
         distance = G_distance_location(G, u, v)
 
@@ -110,7 +111,7 @@ def G_time_callback(G, u, v, velocity, fallback=24*60*60*360):
         return time
     except Exception as e:
         print("Exception", e)
-        return 10000000
+        return fallback
 
 def G_first(G:nx.Graph):
     return [n for n in G.nodes if len(list(G.predecessors(n)))==0][0]
@@ -159,7 +160,7 @@ def G_problem_from_dag(G:nx.Graph) -> nx.Graph:
     return Gn
 
 class TaskConstraint():
-
+    '''structure to save the constraint date for edge(u,v) and dimension with given kwargs'''
     def __init__(self, u:int, v:int, dimension:str=None, **constraint_args):
         self.u = u
         self.v = v
@@ -211,6 +212,11 @@ def G_lookup_edge(G:nx.Graph, **query):
     return result
 
 def G_lookup_node(G:nx.Graph, **query):
+    '''select subset of nodes based on keyword arguments (key=value or key=lambda expression)
+    example:
+     - G_lookup_node(G, name='node_x')
+     - G_lookup_node(G, name=lambda name: name in ["node_x", "node_y"])
+    '''
     result = []
 
     for query_key, query_value in query.items():
@@ -241,6 +247,7 @@ def G_locations_limits(G):
     return xy.min(axis=0), xy.max(axis=0)
 
 def G_enhance_length(G:nx.Graph):
+    '''add length attribute to each edge base on underlying location distance'''
     for ed in G.edges:
         l1 = G.nodes[ed[0]]["location"]
         l2 = G.nodes[ed[1]]["location"]
@@ -250,6 +257,7 @@ def G_enhance_length(G:nx.Graph):
     return G
 
 def G_enhance_xy(G:nx.Graph):
+    '''add x,y coordinates from lat,lon to each node'''
     for n in G.nodes():
         node = G.nodes[n]
         loc = node["location"]
