@@ -262,9 +262,14 @@ class NXLayerLocation(NXLocation):
         self.G = G_layer
 
     @cached_result
-    def diststance_to(self, other:"NXLayerLocation"):
+    def distance_to(self, other:"NXLayerLocation"):
         #return NXLocation.distance_to(self, other)
         # breakpoint()
+        #
+        # print("distance to NXLayerlocation", self, other)
+        if other is None:
+            return 0
+
         if (self.layer_id == other.layer_id):
             return 0
 
