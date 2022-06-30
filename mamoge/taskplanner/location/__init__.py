@@ -95,6 +95,7 @@ class GraphLocation(Location):
         """
         return None
 
+
 class LocationBuilder():
     """Return a Location object based on a dict with a type
     """
@@ -181,7 +182,25 @@ class GPSCartesianLocation(GPSLocation):
         return f"GPSCartesianLocation({self.latitude},{self.longitude},{self.altitude},{self._x_init},{self._y_init})"
 
 
+class ZeroDistanceLocation(Location):
+    """A graph location"""
+    def __init__(self):
+       Location.__init__(self, "nx")
 
+    @cached_result
+    def distance_to(self, other: "Location") -> float:
+        """Return the distance 0"""
+        return 0
+
+    @cached_result
+    def path_to(self, other: "NXLocation", weight="length") -> List[Any]:
+        """Return the path to the other node using astar algorithm.
+        """
+        return []
+
+    def __repr__(self):
+
+        return f"ZeroDistnaceLocation()"
 
 class NXLocation(GraphLocation):
     """A graph location"""
@@ -231,7 +250,7 @@ class NXLocation(GraphLocation):
         for s,t in zip(path[:-1], path[1:]):
             sn = self.G_base.nodes[s]["location"]
             tn = self.G_base.nodes[t]["location"]
-            #print('s,t', sn, tn)
+            # print('s,t', sn, tn)
             dist += sn.distance_to(tn)
 
         return dist#len(path)
@@ -280,11 +299,15 @@ class NXLayerLocation(NXLocation):
 
     @cached_result
     def path_to(self, other:"NXLayerLocation"):
-        if (self.layer_id == other.layer_id):
-            return [self.layer_id]
-        if self.G.has_edge(self.layer_id, other.layer_id):
-            return NXLocation.path_to(self, other)
-        else:
+        try:
+            if (self.layer_id == other.layer_id):
+                return [self.layer_id]
+            if self.G.has_edge(self.layer_id, other.layer_id):
+                return NXLocation.path_to(self, other)
+            else:
+                return None
+        except Exception as e:
+            print("Could not find path to node", e)
             return None
 
     def __repr__(self):

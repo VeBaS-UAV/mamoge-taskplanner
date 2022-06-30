@@ -61,9 +61,11 @@ def draw_folium_poi(G, poi_ids, folium_map=None, name="POI", show=True,**draw_ar
 
         tagname = f"{name}({i})"
 
-
-        folium.Marker(location=(loc.y, loc.x),
-                      popup=tagname, icon=folium.Icon(**draw_args)).add_to(fg_poi)
+        try:
+                folium.Marker(location=(loc.y, loc.x),
+                        popup=tagname, icon=folium.Icon(**draw_args)).add_to(fg_poi)
+        except Exception as e:
+                print(e)
 
     return folium_map
 

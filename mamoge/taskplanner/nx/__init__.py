@@ -9,6 +9,7 @@ import numpy as np
 import itertools
 
 from multiprocessing import Pool
+from mamoge.taskplanner.location import ZeroDistanceLocation
 
 def G_draw_taskgraph_w_pos_layer(G: nx.Graph):
     pos = nx.drawing.layout.multipartite_layout(G, subset_key="layer")
@@ -87,14 +88,44 @@ def G_distance_manhatten(G: nx.Graph, i:Any, j:Any, distance_attribute="location
 def G_distance_location(G: nx.Graph, i:Any, j:Any, fallback=None):
     # print("G_distance_location", G, i, j)
     # print(G.nodes)
+
+    n_i = G.nodes[i]
+    n_j = G.nodes[j]
+
+
+    if "location" not in n_i or "location" not in n_j:
+        # print("zero distance for node", i, j)
+        return 0
+
+    print(n_i, n_j)
+
     location_i = G.nodes[i]["location"]
 
     location_j = G.nodes[j]["location"]
+
+    if location_i is None:
+        # print("zero distance for node 2", i,j)
+        return fallback
+
+    if location_j is None:
+
+        if G.has_edge(i, j):
+            # print("zero distance for node 3", i,j)
+            return 0
+        else:
+            # print("zero distance for node 4", i,j)
+            return fallback
+
+    if isinstance(location_j, ZeroDistanceLocation):
+        if G.has_edge(i, j):
+            return 0
+        return fallback
 
     distance = location_i.distance_to(location_j)
 
     if distance is None:
         return fallback
+
     return distance
 
 def G_time_callback(G, u, v, velocity, fallback=24*60*60*360):
@@ -111,6 +142,7 @@ def G_time_callback(G, u, v, velocity, fallback=24*60*60*360):
         return time
     except Exception as e:
         print("Exception", e)
+        print("G,u,v", G, u, v)
         return fallback
 
 def G_first(G:nx.Graph):
@@ -364,10 +396,17 @@ def G_cost_matrix(G, cost_callback, cost_fallback=np.inf):
 
     ij_args= list(itertools.combinations(range(l), r=2))
     # print(list(ij_args))
-    with Pool(5) as mp:
-        # results = mp.map(functools.partial(cost_callback, G), ij_args)
-        results = mp.map(functools.partial(multiprocessing_partial, cost_callback, G), ij_args)
-        # results = mp.map(cost_callback, ij_args)
+
+    run_mp = False
+    if run_mp:
+        with Pool(5) as mp:
+            # results = mp.map(functools.partial(cost_callback, G), ij_args)
+            results = mp.map(functools.partial(multiprocessing_partial, cost_callback, G), ij_args)
+            # results = mp.map(cost_callback, ij_args
+    else:
+        results = {}
+        for ij, (i,j) in enumerate(ij_args):
+            results[ij] = cost_callback(G, i,j)
 
     for ij, (i,j) in enumerate(ij_args):
         d1 = results[ij]
