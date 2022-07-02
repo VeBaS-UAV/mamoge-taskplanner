@@ -5,6 +5,7 @@ import mamoge.taskplanner.nx as mamogenx
 from mamoge.taskplanner.optimize import TaskOptimizer
 # %%
 
+
 def test_simple_graph_solver():
     # create default example graph
     G = graph_helper.example_graph_1()
@@ -32,6 +33,7 @@ def test_simple_graph_solver():
 
 # %%
 
+
 def test_extended_graph_solver():
 
     # create extended example graph
@@ -56,4 +58,5 @@ def test_extended_graph_solver():
 
     path = results[0]
 
-    assert len(set(path).difference(set([0, 3, 2, 1, 4, 5, 6, 9, 8, 7, 11, 10, 12]))) == 0
+    assert len(set(path).difference(
+        set([0, 3, 2, 1, 4, 5, 6, 9, 8, 7, 11, 10, 12]))) == 0

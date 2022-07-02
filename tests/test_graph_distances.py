@@ -1,28 +1,34 @@
-import networkx as nx
-from mamoge.taskplanner.location import CartesianLocation, GPSLocation, cartesian_offset_to_latlon
-from mamoge.taskplanner.nx import G_distance_location
 import geopy.distance
+import networkx as nx
+
+from mamoge.taskplanner.location import CartesianLocation
+from mamoge.taskplanner.location import GPSLocation
+from mamoge.taskplanner.location import cartesian_offset_to_latlon
+from mamoge.taskplanner.nx import G_distance_location
 
 # %%
+
+
 def test_cartesian_distance():
-    c1 = CartesianLocation(1,1)
-    c2 = CartesianLocation(3,2)
+    c1 = CartesianLocation(1, 1)
+    c2 = CartesianLocation(3, 2)
 
     assert c1.distance_to(c2) == 3
 
 
 def test_cartesian_distance_w_graph():
-    c1 = CartesianLocation(1,1)
-    c2 = CartesianLocation(4,2)
+    c1 = CartesianLocation(1, 1)
+    c2 = CartesianLocation(4, 2)
 
     G = nx.DiGraph()
 
     G.add_node(0, location=c1)
     G.add_node(1, location=c2)
 
-    distance = G_distance_location(G, 0,1)
+    distance = G_distance_location(G, 0, 1)
 
     assert distance == 4
+
 
 def test_gps_distance():
 
@@ -32,6 +38,7 @@ def test_gps_distance():
     dist = g1.distance_to(g2)
 
     assert abs(dist - 57.5) < 0.1
+
 
 def test_gps_distance_w_graph():
 
@@ -43,9 +50,10 @@ def test_gps_distance_w_graph():
     G.add_node(0, location=g1)
     G.add_node(1, location=g2)
 
-    distance = G_distance_location(G, 0,1)
+    distance = G_distance_location(G, 0, 1)
 
     assert abs(distance - 57.5) < 0.1
+
 
 def test_gps_offset():
     lat, lon = 51.7444167, 8.8227609

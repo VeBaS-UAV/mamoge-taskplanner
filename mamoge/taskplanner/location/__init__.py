@@ -9,10 +9,12 @@ from mamoge.taskplanner import nx as mamogenx
 
 # %%
 
+
 def cached_result(func):
     # print("check cache", func)
 
     cache = {}
+
     def inner(*args, **kw_args):
         # breakpoint()
         key = str((args, kw_args))
@@ -20,28 +22,33 @@ def cached_result(func):
         if key in cache:
             # print("cache hit")
             return cache[key]
-            #return func(*args, **kw_args)
+            # return func(*args, **kw_args)
 
         result = func(*args, **kw_args)
         cache[key] = result
         return result
     return inner
 
-class Location:
-    """Represent an abstract location and define some common method defintions."""
 
-    def __init__(self, type:str):
+class Location:
+    """Represent an abstract location."""
+
+    def __init__(self, type: str):
         self.type = type
 
     def as_dict(self) -> dict:
         return dict(type=self.type,
                     x=self.x, y=self.y, z=self.z,
-                    latitude=self.latitude, longitude=self.longitude, altitude=self.altitude)
+                    latitude=self.latitude,
+                    longitude=self.longitude,
+                    altitude=self.altitude)
 
     @abstractmethod
-    def distance_to(self, other:"Location"):
+    def distance_to(self, other: "Location"):
         """Return the distance to the other location.
-        This can be the direct distance or some other distance (e.g. along a path)
+
+        This can be the direct distance or some other distance
+        (e.g. along a path).
         """
         pass
 
@@ -52,6 +59,7 @@ class Location:
     @property
     def x(self):
         """Return the x coordinate of the location.
+
         In case of global position, x is longitude and y the latitude value
         """
         return self.as_tuple()[0]
@@ -59,6 +67,7 @@ class Location:
     @property
     def y(self):
         """Return the y coordinate of the location.
+
         In case of global position, x is longitude and y the latitude value
         """
         return self.as_tuple()[1]
@@ -66,6 +75,7 @@ class Location:
     @property
     def z(self):
         """Return the y coordinate of the location.
+
         In case of global position, x is longitude and y the latitude value
         """
         return self.as_tuple()[2]
@@ -86,20 +96,25 @@ class Location:
         return self.latitude, self.longitude
 
 # __getitem__()
+
+
 class GraphLocation(Location):
-    """Represent a Location in a Graph. Thus a :method `path_to` between two locations
+    """Represent a Location in a Graph.
+
+    Thus a :method `path_to` between two locations.
     """
+
     @abstractmethod
-    def path_to(self, other:Location):
+    def path_to(self, other: Location):
         """Return a list of :class `Location` item from the current location to the given one
         """
         return None
 
 
 class LocationBuilder():
-    """Return a Location object based on a dict with a type
-    """
+    """Return a Location object based on a dict with a type."""
     _location_classes: Location = {}
+
     @staticmethod
     def location_from_dict(location_dict: dict) -> Location:
         location_type = location_dict["type"]
@@ -107,13 +122,13 @@ class LocationBuilder():
         kw_args.pop("type")
 
         if location_type in LocationBuilder._location_classes:
-            locationClass = LocationBuilder._location_classes[location_type]
-            return locationClass(**kw_args)
+            location_class = LocationBuilder._location_classes[location_type]
+            return location_class(**kw_args)
         else:
             raise Exception(f"Could not find location type {location_type}")
 
     @staticmethod
-    def add_locationclass(type:str, handler:Location):
+    def add_locationclass(type: str, handler: Location):
         LocationBuilder._location_classes[type] = handler
 
 
@@ -135,21 +150,21 @@ class CartesianLocation(Location):
         d_array = np.array([dx, dy])
         return self._distance_func(d_array)
 
-
     def __repr__(self):
         return f"CartesianLocation({self.x},{self.y}, {self.z})"
 
     def as_tuple(self):
         return self._x, self._y, self._z
 
+
 class GPSLocation(Location):
-    """Represent a global location in lat and lon coordinates"""
+    """Represent a global location in lat and lon coordinates."""
 
     def __init__(self, latitude, longitude, altitude=None):
-       Location.__init__(self, "gps")
-       self._latitude = latitude
-       self._longitude = longitude
-       self._altitude = altitude
+        Location.__init__(self, "gps")
+        self._latitude = latitude
+        self._longitude = longitude
+        self._altitude = altitude
 
     def as_tuple(self) -> tuple:
         return (self._longitude, self._latitude, self._altitude)
@@ -171,7 +186,7 @@ class GPSCartesianLocation(GPSLocation):
 
     def __init__(self, x, y, origin=None, bearing=0):
         if origin is None:
-            origin = 0,0 #51.87820297838263, 8.771718854268894 # Senne
+            origin = 0, 0  # 51.87820297838263, 8.771718854268894 # Senne
         lat, lon = origin
         lat, lon = cartesian_offset_to_latlon(x, y, lat, lon, bearing)
         self._x_init = x
@@ -184,8 +199,9 @@ class GPSCartesianLocation(GPSLocation):
 
 class ZeroDistanceLocation(Location):
     """A graph location"""
+
     def __init__(self):
-       Location.__init__(self, "nx")
+        Location.__init__(self, "nx")
 
     @cached_result
     def distance_to(self, other: "Location") -> float:
@@ -202,12 +218,14 @@ class ZeroDistanceLocation(Location):
 
         return f"ZeroDistnaceLocation()"
 
+
 class NXLocation(GraphLocation):
     """A graph location"""
+
     def __init__(self, G_base: nx.Graph(), **nx_args):
-       Location.__init__(self, "nx")
-       self.G_base = G_base
-       self.nx_args = nx_args
+        Location.__init__(self, "nx")
+        self.G_base = G_base
+        self.nx_args = nx_args
 
     def base_node(self):
         node_id = self.base_node_id()
@@ -247,13 +265,13 @@ class NXLocation(GraphLocation):
             return None
         #print("distance to path", path)
         dist = 0
-        for s,t in zip(path[:-1], path[1:]):
+        for s, t in zip(path[:-1], path[1:]):
             sn = self.G_base.nodes[s]["location"]
             tn = self.G_base.nodes[t]["location"]
             # print('s,t', sn, tn)
             dist += sn.distance_to(tn)
 
-        return dist#len(path)
+        return dist  # len(path)
 
     @cached_result
     def path_to(self, other: "NXLocation", weight="length") -> List[Any]:
@@ -273,16 +291,16 @@ class NXLocation(GraphLocation):
 
 
 class NXLayerLocation(NXLocation):
-    
-    def __init__(self, layer_id:Any, base_id:Any, G_layer:nx.Graph, G_base:nx.Graph, **nx_args):
+
+    def __init__(self, layer_id: Any, base_id: Any, G_layer: nx.Graph, G_base: nx.Graph, **nx_args):
         NXLocation.__init__(self, G_base, **nx_args)
         self.layer_id = layer_id
         self.base_id = base_id
         self.G = G_layer
 
     @cached_result
-    def distance_to(self, other:"NXLayerLocation"):
-        #return NXLocation.distance_to(self, other)
+    def distance_to(self, other: "NXLayerLocation"):
+        # return NXLocation.distance_to(self, other)
         # breakpoint()
         #
         # print("distance to NXLayerlocation", self, other)
@@ -298,7 +316,7 @@ class NXLayerLocation(NXLocation):
             return None
 
     @cached_result
-    def path_to(self, other:"NXLayerLocation"):
+    def path_to(self, other: "NXLayerLocation"):
         try:
             if (self.layer_id == other.layer_id):
                 return [self.layer_id]
@@ -319,12 +337,12 @@ class NXLayerLocation(NXLocation):
         return {**NXLocation.as_dict(self), **self.base_node()}
 
 
-
 LocationBuilder.add_locationclass("cartesian", CartesianLocation)
 LocationBuilder.add_locationclass("gps", GPSLocation)
 LocationBuilder.add_locationclass("nx", NXLocation)
 
-def cartesian_offset_to_latlon(x:float, y:float, lat:float, lon:float, bearing:float=0):
+
+def cartesian_offset_to_latlon(x: float, y: float, lat: float, lon: float, bearing: float = 0):
     """Reterns an offset location auf the given x,y offset from the given lat lon coordinates and bearing
     Parameters:
         x: offset in x direction (in meter)
