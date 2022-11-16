@@ -6,7 +6,6 @@ from mamoge.taskplanner.optimize.ortools import ORTaskOptimizer
 
 
 class TaskOptimizer:
-
     def __init__(self) -> None:
         self.graph = None
         self.impl = ORTaskOptimizer()

@@ -11,7 +11,6 @@ from mamoge.taskplanner import nx as mamogenx
 
 
 class VebasAnt(acopy.ant.Ant):
-
     def __init__(self, alpha=1, beta=3):
         super().__init__(alpha, beta)
 
@@ -63,7 +62,6 @@ class VebasAnt(acopy.ant.Ant):
 
 
 class VebasColony(acopy.ant.Colony):
-
     def __init__(self, alpha=1, beta=3):
         super().__init__(alpha, beta)
 
@@ -93,7 +91,6 @@ def _call_mp(self, *args):
 
 
 class VebasMPSolver(acopy.Solver):
-
     def __init__(self, rho, q, top=None, plugins=None, num_processes=None):
         super().__init__(rho=rho, q=q, top=top, plugins=plugins)
         self.num_processes = num_processes if num_processes else 5
@@ -101,9 +98,7 @@ class VebasMPSolver(acopy.Solver):
 
     def find_solutions(self, graph, ants):
 
-        ant_chunks = [
-            ants[i::self.num_processes] for i in range(self.num_processes)
-        ]
+        ant_chunks = [ants[i :: self.num_processes] for i in range(self.num_processes)]
 
         _ant_call_w_graph = functools.partial(_call_ant_tour, graph=graph)
 
@@ -133,7 +128,7 @@ class VebasMPSolver(acopy.Solver):
         for edge in state.graph.edges:
             amount = 0
             if self.top:
-                solutions = state.solutions[:self.top]
+                solutions = state.solutions[: self.top]
             else:
                 solutions = state.solutions
             for solution in solutions:
@@ -144,7 +139,6 @@ class VebasMPSolver(acopy.Solver):
 
 
 class ACOTaskOptimizer:
-
     def __init__(self) -> None:
         self.graph: nx.Graph = None
 
@@ -154,15 +148,16 @@ class ACOTaskOptimizer:
 
     def solve(self, time=30, constrains=[]):
         """Solve the optimization problem."""
-        num_nodes = len(self.graph.nodes)
-        num_routes = 1
-        # print("Solving dag", self.dag)
-        node_start = mamogenx.G_first(self.graph)
-        node_end = mamogenx.G_last(self.graph)
+        # num_nodes = len(self.graph.nodes)
+        # num_routes = 1
+        # # print("Solving dag", self.dag)
+        # node_start = mamogenx.G_first(self.graph)
+        # node_end = mamogenx.G_last(self.graph)
 
         print("Calculating distance matrix")
-        distance_matrix = mamogenx.G_distance_matrix(self.graph,
-                                                     distance_fallback=np.nan)
+        distance_matrix = mamogenx.G_distance_matrix(
+            self.graph, distance_fallback=np.nan
+        )
 
         print("Distance matrix", distance_matrix)
 

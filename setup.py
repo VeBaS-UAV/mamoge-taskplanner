@@ -1,5 +1,5 @@
+"""Setup configuration of the project."""
 import setuptools
-from distutils.extension import Extension
 
 setuptools.setup(
     name="mamoge-taskplanner",
@@ -17,8 +17,6 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
     ],
-    #package_dir={"mamoge.taskplanner": "mamoge/taskplanner", "mamoge.taskplanner.test":"tests"},
-    #packages=["mamoge.taskplanner", "mamoge.taskplanner.nx", "mamoge.taskplanner.optimize" ,"mamoge.taskplanner.tests"],
     packages=setuptools.find_packages(),
-    python_requires=">=3.9"
+    python_requires=">=3.9",
 )

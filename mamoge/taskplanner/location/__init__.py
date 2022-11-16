@@ -27,6 +27,7 @@ def cached_result(func):
         result = func(*args, **kw_args)
         cache[key] = result
         return result
+
     return inner
 
 
@@ -37,11 +38,15 @@ class Location:
         self.type = type
 
     def as_dict(self) -> dict:
-        return dict(type=self.type,
-                    x=self.x, y=self.y, z=self.z,
-                    latitude=self.latitude,
-                    longitude=self.longitude,
-                    altitude=self.altitude)
+        return dict(
+            type=self.type,
+            x=self.x,
+            y=self.y,
+            z=self.z,
+            latitude=self.latitude,
+            longitude=self.longitude,
+            altitude=self.altitude,
+        )
 
     @abstractmethod
     def distance_to(self, other: "Location"):
@@ -95,6 +100,7 @@ class Location:
     def latlon(self):
         return self.latitude, self.longitude
 
+
 # __getitem__()
 
 
@@ -106,13 +112,16 @@ class GraphLocation(Location):
 
     @abstractmethod
     def path_to(self, other: Location):
-        """Return a list of :class `Location` item from the current location to the given one
+        """Return a list of :class `Location` items.
+
+        from the current location to the given one
         """
         return None
 
 
-class LocationBuilder():
+class LocationBuilder:
     """Return a Location object based on a dict with a type."""
+
     _location_classes: Location = {}
 
     @staticmethod
@@ -133,8 +142,7 @@ class LocationBuilder():
 
 
 class CartesianLocation(Location):
-    """Represent a Location in cartesian space
-    """
+    """Represent a Location in cartesian space"""
 
     def __init__(self, x, y, z=0, distance_func=np.linalg.norm):
         Location.__init__(self, "cartesian")
@@ -171,11 +179,14 @@ class GPSLocation(Location):
 
     @cached_result
     def distance_to(self, other: "GPSLocation") -> float:
-        """Return the distance between two gps position, using geopy library and WGS84 ellipsoid"""
+        """Return the distance between two gps positions.
+
+        Using geopy library and WGS84 ellipsoid
+        """
         return gps_distance.distance(self.latlon(), other.latlon()).meters
 
     def __repr__(self):
-        return f"GPSLocation({self._latitude},{self._longitude},{self._altitude})"
+        return f"GPSLocation({self._latitude}," f"{self._longitude},{self._altitude})"
 
     def location(self):
         """Return the lat and _longitude values as a tuple"""
@@ -183,7 +194,6 @@ class GPSLocation(Location):
 
 
 class GPSCartesianLocation(GPSLocation):
-
     def __init__(self, x, y, origin=None, bearing=0):
         if origin is None:
             origin = 0, 0  # 51.87820297838263, 8.771718854268894 # Senne
@@ -194,7 +204,10 @@ class GPSCartesianLocation(GPSLocation):
         GPSLocation.__init__(self, lat, lon)
 
     def __repr__(self):
-        return f"GPSCartesianLocation({self.latitude},{self.longitude},{self.altitude},{self._x_init},{self._y_init})"
+        return (
+            f"GPSCartesianLocation({self.latitude},{self.longitude},"
+            f"{self.altitude},{self._x_init},{self._y_init})"
+        )
 
 
 class ZeroDistanceLocation(Location):
@@ -210,13 +223,12 @@ class ZeroDistanceLocation(Location):
 
     @cached_result
     def path_to(self, other: "NXLocation", weight="length") -> List[Any]:
-        """Return the path to the other node using astar algorithm.
-        """
+        """Return the path to the other node using astar algorithm."""
         return []
 
     def __repr__(self):
 
-        return f"ZeroDistnaceLocation()"
+        return "ZeroDistnaceLocation()"
 
 
 class NXLocation(GraphLocation):
@@ -258,12 +270,15 @@ class NXLocation(GraphLocation):
 
     @cached_result
     def distance_to(self, other: "NXLocation") -> float:
-        """Return the distance to the next nx location as the distance along the path to the other location in the base graph"""
+        """Return the distance to the next nx location.
+
+        As the distance along the path to the other location in the base graph.
+        """
         path = self.path_to(other)
 
         if path is None or len(path) == 0:
             return None
-        #print("distance to path", path)
+        # print("distance to path", path)
         dist = 0
         for s, t in zip(path[:-1], path[1:]):
             sn = self.G_base.nodes[s]["location"]
@@ -275,8 +290,7 @@ class NXLocation(GraphLocation):
 
     @cached_result
     def path_to(self, other: "NXLocation", weight="length") -> List[Any]:
-        """Return the path to the other node using astar algorithm.
-        """
+        """Return the path to the other node using astar algorithm."""
         l1 = self.base_node_id()
         l2 = other.base_node_id()
 
@@ -291,8 +305,14 @@ class NXLocation(GraphLocation):
 
 
 class NXLayerLocation(NXLocation):
-
-    def __init__(self, layer_id: Any, base_id: Any, G_layer: nx.Graph, G_base: nx.Graph, **nx_args):
+    def __init__(
+        self,
+        layer_id: Any,
+        base_id: Any,
+        G_layer: nx.Graph,
+        G_base: nx.Graph,
+        **nx_args,
+    ):
         NXLocation.__init__(self, G_base, **nx_args)
         self.layer_id = layer_id
         self.base_id = base_id
@@ -307,7 +327,7 @@ class NXLayerLocation(NXLocation):
         if other is None:
             return 0
 
-        if (self.layer_id == other.layer_id):
+        if self.layer_id == other.layer_id:
             return 0
 
         if self.G.has_edge(self.layer_id, other.layer_id):
@@ -318,7 +338,7 @@ class NXLayerLocation(NXLocation):
     @cached_result
     def path_to(self, other: "NXLayerLocation"):
         try:
-            if (self.layer_id == other.layer_id):
+            if self.layer_id == other.layer_id:
                 return [self.layer_id]
             if self.G.has_edge(self.layer_id, other.layer_id):
                 return NXLocation.path_to(self, other)
@@ -342,8 +362,12 @@ LocationBuilder.add_locationclass("gps", GPSLocation)
 LocationBuilder.add_locationclass("nx", NXLocation)
 
 
-def cartesian_offset_to_latlon(x: float, y: float, lat: float, lon: float, bearing: float = 0):
-    """Reterns an offset location auf the given x,y offset from the given lat lon coordinates and bearing
+def cartesian_offset_to_latlon(
+    x: float, y: float, lat: float, lon: float, bearing: float = 0
+):
+    """Return an offset location.
+
+    Of the given x,y offset from the given lat lon coordinates and bearing
     Parameters:
         x: offset in x direction (in meter)
         y: offset in y direction (in meter)
@@ -352,10 +376,10 @@ def cartesian_offset_to_latlon(x: float, y: float, lat: float, lon: float, beari
         bearing: the bearing for x,y offset (in degraa, not radians)
     """
     start = lat, lon
-    dx = gps_distance.geodesic(kilometers=x/1000)
-    dy = gps_distance.geodesic(kilometers=y/1000)
-    target_x = dx.destination(point=start, bearing=bearing-90)
-    target_y = dy.destination(point=start, bearing=bearing+180)
+    dx = gps_distance.geodesic(kilometers=x / 1000)
+    dy = gps_distance.geodesic(kilometers=y / 1000)
+    target_x = dx.destination(point=start, bearing=bearing - 90)
+    target_y = dy.destination(point=start, bearing=bearing + 180)
 
     d_lat = (lat - target_x.latitude) + (lat - target_y.latitude)
     d_lon = (lon - target_x.longitude) + (lon - target_y.longitude)
