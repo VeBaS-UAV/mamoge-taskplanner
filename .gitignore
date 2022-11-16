@@ -160,4 +160,4 @@ cython_debug/
 #.idea/
 
 # workspace settings
-.vscode/settings.json
+.vscode/launch.json
