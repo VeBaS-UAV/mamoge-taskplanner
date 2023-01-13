@@ -1,10 +1,13 @@
 import networkx as nx
-from mamoge.taskplanner.location import GPSLocation, CartesianLocation, Location, NXLocation
+from mamoge.taskplanner.location import (
+    GPSLocation,
+    CartesianLocation,
+    Location,
+    NXLocation,
+)
 import mamoge.taskplanner.nx as mamogenx
 
-
-
-#def test_graph_node_lookup():
+# def test_graph_node_lookup():
 #    l1 = NXLocation(G_routemap, name="G11")
 #    l2 = NXLocation(G_routemap, name="G2-3")
 #    type(l1)
@@ -12,6 +15,7 @@ import mamoge.taskplanner.nx as mamogenx
 #
 #    path = l1.path_to(l2)
 #    path
+
 
 def test_graph_lookup():
     G = nx.Graph()

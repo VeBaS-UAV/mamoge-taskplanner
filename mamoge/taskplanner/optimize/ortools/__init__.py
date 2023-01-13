@@ -236,8 +236,9 @@ class ORTaskOptimizer:
 
         # Allow to drop nodes, penalty of 60min.
         penalty = 60 * 60
-        # penalty = 1
+        # penalty = 3*60
         self.logger.info(f"Adding Penalty to dimension {self.penalty_dimension}")
+
         dimension = self.routing.GetDimensionOrDie(self.penalty_dimension)
         for node in range(1, num_nodes - 1):
             self.logger.debug(f"Add penality {node}, {self.manager.NodeToIndex(node)}")
@@ -247,17 +248,31 @@ class ORTaskOptimizer:
             self.routing.AddToAssignment(slack_var)
             pass
 
+        # penalty = 60*60
+        # # penalty = 3*60
+        # self.logger.info(
+        #     f"Adding Penalty to dimension {self.penalty_dimension}")
+        # dimension = self.routing.GetDimensionOrDie("water")
+        # for node in range(1, num_nodes - 1):
+        #     self.logger.debug(
+        #         f"Add penality {node}, {self.manager.NodeToIndex(node)}")
+        #     i = self.manager.NodeToIndex(node)
+        #     self.routing.AddDisjunction([i], penalty)
+        #     slack_var = dimension.SlackVar(i)
+        #     self.routing.AddToAssignment(slack_var)
+        #     pass
+
         self.logger.info("Defining search parameters")
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
         search_parameters.log_search = True
-        # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
+        search_parameters.first_solution_strategy = (
+            routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
+        )
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_MOST_CONSTRAINED_ARC)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.BEST_INSERTION)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.ALL_UNPERFORMED)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.LOCAL_CHEAPEST_ARC)
-        search_parameters.first_solution_strategy = (
-            routing_enums_pb2.FirstSolutionStrategy.GLOBAL_CHEAPEST_ARC
-        )
+
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.FIRST_UNBOUND_MIN_VALUE)
         # search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.SWEEP)
 
@@ -265,8 +280,6 @@ class ORTaskOptimizer:
             routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
         )
         # search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.TABU_SEARCH)
-        # search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
-        search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.TABU_SEARCH)
         search_parameters.time_limit.FromSeconds(max_time)
 
         # search_parameters.first_solution_strategy = (
