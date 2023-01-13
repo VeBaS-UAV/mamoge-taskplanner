@@ -107,7 +107,7 @@ def G_distance_location(G: nx.Graph, i: Any, j: Any, fallback=None):
         # print("zero distance for node", i, j)
         return 0
 
-    print(n_i, n_j)
+    # print(n_i, n_j)
 
     location_i = G.nodes[i]["location"]
 
@@ -155,8 +155,8 @@ def G_time_callback(G, u, v, velocity, fallback=24 * 60 * 60 * 360):
 
         return time
     except Exception as e:
-        print("Exception", e)
-        print("G,u,v", G, u, v)
+        # print("Exception", e)
+        # print("G,u,v", G, u, v)
         return fallback
 
 
