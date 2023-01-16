@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+from abc import abstractmethod
 from functools import reduce
 
 import logging
@@ -47,19 +48,25 @@ class TaskEvent(Enum):
 
 
 #%%
+
+
 class Task:
     def __init__(
-        self, id: str, name: str, requirements: Requirements = Requirements()
+        self,
+        id: str,
+        name: str,
+        requirements: Requirements,
+        state: TaskState = TaskState.UNDEFINED,
     ) -> None:
-        self.logger = logging.getLogger(Task.__name__)
-        self.id = f"/{id}"
+        self._logger = logging.getLogger(Task.__name__)
+        self.id = id
         self.local_id = id
         self.name = name
         self.state: TaskState = TaskState.UNDEFINED
-        self.requirements = requirements
+        self.requirements: Requirements = requirements
 
     def set_state(self, state: TaskState):
-        self.logger.debug(f"change state {self.id} from {self.state} to {state}")
+        self._logger.debug(f"change state {self.id} from {self.state} to {state}")
         self.state = state
 
     def __repr_rec__(self, intent=1) -> str:
@@ -77,7 +84,7 @@ class Task:
         return name + ds_repr
 
     def has_requirements(self, name: str):
-        return name in self.requirements
+        return name in self.requirements.requirements
 
     def meet_capabilities(self, capabilities: Capabilities):
         return self.requirements.meet(capabilities)
@@ -87,6 +94,33 @@ class Task:
 
     def in_state(self, state):
         return self.state == state
+
+    def dict(self):
+        d = {}
+        d["id"] = self.id
+        d["local_id"] = self.local_id
+        d["name"] = self.name
+        d["state"] = str(self.state)
+        d["requirements"] = self.requirements.dict()
+
+        return d
+
+    @staticmethod
+    def from_dict(dict_value):
+        id = dict_value["id"]
+        local_id = dict_value["local_id"]
+        name = dict_value["name"]
+        state = dict_value["state"]
+        req = Requirements.from_dict(dict_value["requirements"])
+        t = Task(id=id, name=name, state=state, requirements=req)
+        t.local_id = local_id
+
+        return t
+
+
+class TaskSyncPoint(Task):
+    def __init__(self, id: str, name: str) -> None:
+        super().__init__(id, name, requirements=Requirements())
 
 
 class DAG:
@@ -100,7 +134,7 @@ class DAG:
 
     def add_task(self, task: Task) -> None:
 
-        task.id = f"{self.id}/{task.local_id}"
+        task.id = f"{self.id}/{task.id}"
 
         self.dag.add_node(task)
 
@@ -124,3 +158,36 @@ class DAG:
     def __iadd__(self, task: Task):
         self.add_task(task)
         return self
+
+    def __hash__(self):
+        return hash(self.__repr__())
+
+    def dict(self):
+
+        nodes = [t.dict() for t in self.dag.nodes]
+
+        edges = [(u.id, v.id) for u, v in self.dag.edges]
+        d = {"name": self.name, "nodes": nodes, "edges": edges}
+
+        return d
+
+    @staticmethod
+    def from_dict(dict_values):
+        name = dict_values["name"]
+        nodes = dict_values["nodes"]
+        edges = dict_values["edges"]
+
+        dag = DAG(name)
+
+        for n in nodes:
+            t = Task.from_dict(n)
+            id = t.id
+            dag += t
+            t.id = id
+
+        tasks = dag.tasks()
+        for u, v in edges:
+            u_node = tasks[u]
+            v_node = tasks[v]
+            dag.set_downstream(u_node, v_node)
+        return dag

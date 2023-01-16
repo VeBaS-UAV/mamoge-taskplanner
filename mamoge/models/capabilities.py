@@ -36,6 +36,15 @@ class Requirement:
 
         return self
 
+    def dict(self):
+        dict_values = ["name", "value", "consumes"]
+        return {n: getattr(self, n) for n in dict_values}
+
+    @staticmethod
+    def from_dict(dict_values):
+        r = Requirement(**dict_values)
+        return r
+
 
 class Capability:
     def __init__(self, name: str, value: Any):
@@ -64,9 +73,18 @@ class Capability:
 
         return self
 
+    def dict(self):
+        dict_values = ["name", "value"]
+        return {n: getattr(self, n) for n in dict_values}
+
+    @staticmethod
+    def from_dict(dict_values):
+        r = Capability(**dict_values)
+        return r
+
 
 class Requirements:
-    def __init__(self, *requirements: List[Capability]):
+    def __init__(self, *requirements: List[Requirement]):
         self.requirements = {c.name: c for c in requirements}
 
     def __contains__(self, item: Capability):
@@ -91,6 +109,7 @@ class Requirements:
             self.requirements[req.name] += req.copy()
         else:
             self.requirements[req.name] = req.copy()
+
         return self
 
     def __repr__(self):
@@ -120,6 +139,14 @@ class Requirements:
             cpy += r.copy()
 
         return cpy
+
+    def dict(self):
+        return {k: r.dict() for k, r in self.requirements.items()}
+
+    @staticmethod
+    def from_dict(requirement_values: Dict):
+        rl = [Requirement.from_dict(req) for name, req in requirement_values.items()]
+        return Requirements(*rl)
 
 
 class Capabilities:
@@ -172,6 +199,14 @@ class Capabilities:
 
     def __le__(self, requirements: Requirements):
         return self.satisfy(requirements)
+
+    def dict(self):
+        return {k: r.dict() for k, r in self.capabilities.items()}
+
+    @staticmethod
+    def from_dict(capabilities_values: Dict):
+        rl = [Capability.from_dict(req) for name, req in capabilities_values.items()]
+        return Capabilities(*rl)
 
 
 class CapabilityBag:
