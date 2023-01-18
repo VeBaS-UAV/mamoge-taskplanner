@@ -1,13 +1,12 @@
 {
+  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[python]": { "editor.rulers": [88] },
   "editor.formatOnSave": true,
-  "python.formatting.provider": "black",
-  "[python]": {
-    "editor.rulers": [88]
-  },
   "git.branchProtection": ["main"],
+  "python.formatting.provider": "black",
   "python.linting.banditEnabled": true,
-  "python.linting.flake8Enabled": true,
-  "python.linting.pycodestyleEnabled": false,
-  "python.linting.pydocstyleEnabled": false,
-  "python.linting.enabled": true
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": true
 }
