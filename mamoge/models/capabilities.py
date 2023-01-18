@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from typing import List, Any, Dict, Union, Tuple
-
+import json
 import logging
 
 logger = logging.getLogger()
@@ -200,8 +200,11 @@ class Capabilities:
     def __le__(self, requirements: Requirements):
         return self.satisfy(requirements)
 
-    def dict(self):
+    def to_dict(self):
         return {k: r.dict() for k, r in self.capabilities.items()}
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
 
     @staticmethod
     def from_dict(capabilities_values: Dict):
