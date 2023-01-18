@@ -11,8 +11,16 @@ logger = logging.getLogger()
 class Requirement:
     def __init__(self, name: str, value: Any, consumes=False):
         self.name = name
-        self.value = value
+        self._value = value
         self.consumes = consumes
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        self._value = value
 
     def meet(self, other: Capability):
         if self.name is not other.name:
