@@ -159,7 +159,7 @@ class Requirements:
 
 class Capabilities:
     def __init__(self, *capabilities: List[Capability]):
-        self.capabilities: dict[Capability] = {c.name: c for c in capabilities}
+        self.capabilities = {c.name: c for c in capabilities}
 
     def __contains__(self, item: Capability):
         if isinstance(item, str):
