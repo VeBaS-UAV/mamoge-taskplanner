@@ -1,0 +1,4 @@
+graphviz
+ipykernel
+pyvis
+redis
