@@ -54,12 +54,12 @@ def test_capabilities():
     c = Capability(name="water", value=10)
 
     cs = Capabilities(c)
-    dict_cs = cs.dict()
+    dict_cs = cs.to_dict()
 
     cs_new = Capabilities.from_dict(dict_cs)
 
     assert str(cs) == str(cs_new)
-    assert str(dict_cs) == str(cs_new.dict())
+    assert str(dict_cs) == str(cs_new.to_dict())
 
 
 def test_task():
@@ -70,12 +70,12 @@ def test_task():
         requirements=Requirements(Requirement(name="water", value=10, consumes=True)),
     )
 
-    dict_t = t1.dict()
+    dict_t = t1.to_dict()
 
     t1_new = Task.from_dict(dict_t)
 
     assert str(t1) == str(t1_new)
-    assert str(dict_t) == str(t1_new.dict())
+    assert str(dict_t) == str(t1_new.to_dict())
 
 
 def test_dag():

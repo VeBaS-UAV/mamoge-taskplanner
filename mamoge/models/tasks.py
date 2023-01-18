@@ -89,7 +89,7 @@ class Task:
     def in_state(self, state):
         return self.state == state
 
-    def dict(self):
+    def to_dict(self):
         d = {}
         d["id"] = self.id
         d["local_id"] = self.local_id
@@ -98,6 +98,9 @@ class Task:
         d["requirements"] = self.requirements.dict()
 
         return d
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
 
     @staticmethod
     def from_dict(dict_value):
@@ -110,6 +113,14 @@ class Task:
         t.local_id = local_id
 
         return t
+
+
+class Tasks:
+    def __init__(self, tasks: List[Task]) -> None:
+        self.tasks = tasks
+
+    def to_json(self):
+        return json.dumps([task.to_dict() for task in self.tasks])
 
 
 class TaskSyncPoint(Task):
