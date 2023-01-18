@@ -1,30 +1,27 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 from abc import abstractmethod
+from enum import Enum
 from functools import reduce
-
+from typing import List, Any, Dict, Union, Tuple
+import json
 import logging
+
+from graphviz import Digraph
+import networkx as nx
 import pyvis
 import uuid
-import networkx as nx
-
-from enum import Enum
-from graphviz import Digraph
-from typing import List, Any, Dict, Union, Tuple
-
-logging.basicConfig(level=logging.DEBUG)
-
-logger = logging.getLogger()
 
 from mamoge.models.capabilities import (
-    Requirements,
-    Requirement,
     Capabilities,
     Capability,
+    Requirement,
+    Requirements,
 )
 
 
-# %%
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
 
 
 class TaskState(Enum):
@@ -45,9 +42,6 @@ class TaskEvent(Enum):
     COMPLETED = "completed"
     ERROR = "error"
     RESOLVED = "resolved"
-
-
-#%%
 
 
 class Task:
