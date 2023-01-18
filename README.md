@@ -7,25 +7,7 @@ The `settings.json` file for `vscode` is included in the repository for a minimu
 
 When *not* using `vscode`, please make sure that your editor supports a *"format on save"-ish* option. Also `pre-commit` should be utilized, see below.
 
-It is recommended to use an Anaconda (e.g., `miniconda`) virtual environment for `mamoge-taskplanner`:
-```console
-conda env create --file environment.yaml --name mamoge
-```
-
-List environments:
-```console
-conda env list
-```
-
-Activate and use:
-```console
-conda activate mamoge
-```
-
-Update the environment persistence file *(with active env `mamoge`)*:
-```console
-conda env export > environment.yml
-```
+Developing with a [devcontainer 🔗](https://microsoft.github.io/code-with-engineering-playbook/developer-experience/devcontainers/). When opening in vscode start the dev environment with `reopen in container`. Please also refer to the official documentation.
 
 ## Python linting and formatting
 
