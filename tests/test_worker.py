@@ -1,6 +1,6 @@
 import pytest
 
-from mamoge.worker.worker import WorkerAPI, RedisWorker
+from mamoge.api.worker import WorkerAPI, RedisWorker
 from mamoge.models.capabilities import Capabilities, Capability
 from mamoge.models.tasks import Task
 
