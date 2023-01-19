@@ -1,9 +1,7 @@
+from __future__ import annotations
 from typing import List, Any, Dict, Union
 import json
 import logging
-
-from mamoge.models.capabilities import Capability
-from mamoge.models.capabilities import Requirements
 
 logger = logging.getLogger()
 
