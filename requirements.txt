@@ -4,5 +4,6 @@ ipykernel
 matplotlib
 numpy
 ortools
+pytest
 pyvis
 redis
