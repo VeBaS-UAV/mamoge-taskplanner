@@ -1,23 +1,12 @@
-#!/usr/bin/env python3
-from __future__ import annotations
-from abc import abstractmethod
 from enum import Enum
-from functools import reduce
-from typing import List, Any, Dict, Union, Tuple
+from typing import List
 import json
 import logging
 
-from graphviz import Digraph
 import networkx as nx
-import pyvis
-import uuid
 
-from mamoge.models.capabilities import (
-    Capabilities,
-    Capability,
-    Requirement,
-    Requirements,
-)
+from mamoge.models.capabilities import Capabilities
+from mamoge.models.capabilities import Requirements
 
 
 logging.basicConfig(level=logging.DEBUG)
