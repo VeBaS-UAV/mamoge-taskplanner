@@ -23,11 +23,13 @@
     "vscode": {
       "settings": { "terminal.integrated.defaultProfile.linux": "zsh" },
       "extensions": [
+        "eamodio.gitlens",
         "esbenp.prettier-vscode",
         "mhutchie.git-graph",
         "ms-azuretools.vscode-docker",
-        "yzhang.markdown-all-in-one",
-        "eamodio.gitlens"
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "yzhang.markdown-all-in-one"
       ]
     }
   }
