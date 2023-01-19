@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name="mamoge-taskplanner",
-    version="0.0.1",
+    version="0.1.0",
     author="matthias fueller, pascal niggemeier",
     author_email="matthias.fueller@fhdw.de, pascal.niggemeier@fhdw.de",
     description="mamoge task planner",
