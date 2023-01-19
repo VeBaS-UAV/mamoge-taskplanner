@@ -1,4 +1,8 @@
+geopy
 graphviz
 ipykernel
+matplotlib
+numpy
+ortools
 pyvis
 redis
