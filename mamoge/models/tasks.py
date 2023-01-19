@@ -84,7 +84,7 @@ class Task:
         d["local_id"] = self.local_id
         d["name"] = self.name
         d["state"] = str(self.state)
-        d["requirements"] = self.requirements.dict()
+        d["requirements"] = self.requirements.to_dict()
 
         return d
 
@@ -156,9 +156,9 @@ class DAG:
     def __hash__(self):
         return hash(self.__repr__())
 
-    def dict(self):
+    def to_dict(self):
 
-        nodes = [t.dict() for t in self.dag.nodes]
+        nodes = [t.to_dict() for t in self.dag.nodes]
 
         edges = [(u.id, v.id) for u, v in self.dag.edges]
         d = {"name": self.name, "nodes": nodes, "edges": edges}

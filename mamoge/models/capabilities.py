@@ -44,7 +44,7 @@ class Requirement:
 
         return self
 
-    def dict(self):
+    def to_dict(self):
         dict_values = ["name", "value", "consumes"]
         return {n: getattr(self, n) for n in dict_values}
 
@@ -81,7 +81,7 @@ class Capability:
 
         return self
 
-    def dict(self):
+    def to_dict(self):
         dict_values = ["name", "value"]
         return {n: getattr(self, n) for n in dict_values}
 
@@ -148,8 +148,8 @@ class Requirements:
 
         return cpy
 
-    def dict(self):
-        return {k: r.dict() for k, r in self.requirements.items()}
+    def to_dict(self):
+        return {k: r.to_dict() for k, r in self.requirements.items()}
 
     @staticmethod
     def from_dict(requirement_values: Dict):
@@ -209,7 +209,7 @@ class Capabilities:
         return self.satisfy(requirements)
 
     def to_dict(self):
-        return {k: r.dict() for k, r in self.capabilities.items()}
+        return {k: r.to_dict() for k, r in self.capabilities.items()}
 
     def to_json(self):
         return json.dumps(self.to_dict())

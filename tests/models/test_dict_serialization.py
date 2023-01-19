@@ -16,24 +16,24 @@ def test_requirement():
 
     r = Requirement(name="water", value=10)
 
-    dict_r = r.dict()
+    dict_r = r.to_dict()
 
     r_new = Requirement.from_dict(dict_r)
 
     assert str(r) == str(r_new)
-    assert str(dict_r) == str(r_new.dict())
+    assert str(dict_r) == str(r_new.to_dict())
 
 
 def test_capability():
 
     c = Capability(name="water", value=10)
 
-    dict_c = c.dict()
+    dict_c = c.to_dict()
 
     c_new = Capability.from_dict(dict_c)
 
     assert str(c) == str(c_new)
-    assert str(dict_c) == str(c_new.dict())
+    assert str(dict_c) == str(c_new.to_dict())
 
 
 def test_requirements():
@@ -41,12 +41,12 @@ def test_requirements():
     r = Requirement(name="water", value=10)
 
     rs = Requirements(r)
-    dict_rs = rs.dict()
+    dict_rs = rs.to_dict()
 
     rs_new = Requirements.from_dict(dict_rs)
 
     assert str(rs) == str(rs_new)
-    assert str(dict_rs) == str(rs_new.dict())
+    assert str(dict_rs) == str(rs_new.to_dict())
 
 
 def test_capabilities():
@@ -135,7 +135,7 @@ def test_dag():
 
     dag.set_downstream(ts2, t5)
 
-    dict_dag = dag.dict()
+    dict_dag = dag.to_dict()
 
     dag_new = DAG.from_dict(dict_dag)
 
@@ -143,6 +143,6 @@ def test_dag():
 
     print(dict_dag)
     print("####")
-    print(dag_new.dict())
+    print(dag_new.to_dict())
 
-    assert str(dict_dag) == str(dag_new.dict())
+    assert str(dict_dag) == str(dag_new.to_dict())
