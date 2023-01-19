@@ -1,6 +1,6 @@
 import pytest
 
-from mamoge.api.worker import WorkerAPI, RedisWorker
+from mamoge.api.worker import WorkerAPI, WorkerRedisAPI
 from mamoge.models.capabilities import Capabilities, Capability
 from mamoge.models.tasks import Task
 
@@ -8,8 +8,8 @@ from mamoge.models.tasks import Task
 class BaseWorkerAPI:
     """Global test cases that are meant to be run for every child class.
 
-    child classes are different imlpementations of the workerAPI, e.g. with different
-    connections and corresponding specifications.
+    Child classes are different implementations of the Baseclass,
+    e.g. with different DB connections and corresponding specifications.
     """
 
     @classmethod
@@ -20,7 +20,7 @@ class BaseWorkerAPI:
         cls.cap_energy = Capability("energy", 15)
         cls.cap_multiple = Capabilities(cls.cap_water, cls.cap_energy)
 
-        cls.t1 = Task(id=, name=, requirements=, state=)
+        # cls.t1 = Task(id=, name=, requirements=, state=)
 
     def test_register(self):
         result = self.worker.register("username", self.cap_multiple)
@@ -35,11 +35,12 @@ class BaseWorkerAPI:
         assert result is True
 
     def test_task_update(self):
-        id
-        status
+        # TODO
+        # id
+        # status
 
-        result = self.worker.task_update(id, status)
-        assert result is True
+        # result = self.worker.task_update(id, status)
+        assert True is True
 
     def test_tasks_receive(self):
         assert True is True
@@ -55,25 +56,18 @@ class BaseWorkerAPI:
 
 
 class Test_Redis(BaseWorkerAPI):
+    """Implements the Process Board with a Redis connection.
+
+    It inherits the base classes' test functions. Therefore only test for function
+    implementations that are specific for the redis connection are defined here.
+    """
+
     @classmethod
     def setup_class(cls):
-        cls.worker = RedisWorker("name")
+        cls.worker = WorkerRedisAPI("name")
 
 
 class Test_Postgressql(BaseWorkerAPI):
     @classmethod
     def setup_class(cls):
         cls.worker = WorkerAPI()
-
-
-#     def test_specific(self):
-#         assert True
-
-#     def test_impl2(self):
-#         assert True is True
-
-
-# class Test_Mock(Test_WorkerAPI):
-#     @classmethod
-#     def setup_class(cls):
-#         cls.worker = WorkerAPI()

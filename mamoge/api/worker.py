@@ -62,7 +62,7 @@ class WorkerAPI:
         raise NotImplementedError
 
 
-class RedisWorker(WorkerAPI):
+class WorkerRedisAPI(WorkerAPI):
     """The overlay for the WorkerAPI with a redis flavor.
 
     This WorkerAPI holds a connection to a redis database.
