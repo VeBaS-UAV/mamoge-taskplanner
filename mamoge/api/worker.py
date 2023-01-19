@@ -1,27 +1,39 @@
 """MamoGe Worker API."""
 import redis
 
-from mamoge.models.capabilities import Capabilities
+from mamoge.models.capabilities import Capabilities, Capability
 from mamoge.models.tasks import Tasks
 
 
 class WorkerAPI:
     """Base class for the WorkerAPI."""
 
-    def register(self):
-        """Register this Worker at the Taskplanner."""
+    def register(self, name: str, capabilities: Capabilities):
+        """Register this Worker at the Taskplanner.
+
+        Args:
+            name (str): name of the worker that is unique in the domain space
+            capabilities (Capabilities): workers' capabilities
+        """
         raise NotImplementedError
 
-    def unregister(self):
-        """Unregister this Worker from the Taskplanner."""
+    def unregister(self, name: str):
+        """Unregister this Worker from the Taskplanner.
+
+        Args:
+            name (str): name of the worker that is unique in the domain space
+        """
         raise NotImplementedError
 
-    def keep_alive(self):
+    def keep_alive(self, name: str):
         """Send a Heatbeat.
 
         This is to let the Taskplanner know, that the worker is still available.
         Otherwise the Taskplanner might try to retract Tasks that have assigned to this
         worker.
+
+        Args:
+            name (str): name of the worker that is unique in the domain space
         """
         raise NotImplementedError
 
@@ -41,11 +53,11 @@ class WorkerAPI:
         """
         raise NotImplementedError
 
-    def update_capabilities(self, capabilities: Capabilities):
+    def update_capabilities(self, name: str, capabilities: Capabilities):
         """Update the Capabilities of this Worker."""
         raise NotImplementedError
 
-    def update_capability(self):
+    def update_capability(self, name: str, capability: Capability):
         """Update a single Capability of this Worker."""
         raise NotImplementedError
 

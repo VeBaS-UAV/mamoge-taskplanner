@@ -5,7 +5,7 @@ from mamoge.models.capabilities import Capabilities, Capability
 from mamoge.models.tasks import Task
 
 
-class BaseWorkerAPI:
+class BaseProcessBoard:
     """Global test cases that are meant to be run for every child class.
 
     child classes are different imlpementations of the workerAPI, e.g. with different
@@ -65,15 +65,3 @@ class Test_Postgressql(BaseWorkerAPI):
     def setup_class(cls):
         cls.worker = WorkerAPI()
 
-
-#     def test_specific(self):
-#         assert True
-
-#     def test_impl2(self):
-#         assert True is True
-
-
-# class Test_Mock(Test_WorkerAPI):
-#     @classmethod
-#     def setup_class(cls):
-#         cls.worker = WorkerAPI()
