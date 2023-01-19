@@ -74,7 +74,7 @@ class TestCapabilities:
 
         assert self.req_multiple.meet(cap_multiple) is False
 
-    def test_int_capabilities_single(self):
+    def test_int_capabilities_single_diverging_capability(self):
         self.cap_water.value = 5
 
         assert self.r_water.meet(self.cap_water) is False
