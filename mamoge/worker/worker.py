@@ -45,6 +45,10 @@ class WorkerAPI:
         """Update the Capabilities of this Worker."""
         raise NotImplementedError
 
+    def update_capability(self):
+        """Update a single Capability of this Worker."""
+        raise NotImplementedError
+
 
 class RedisWorker(WorkerAPI):
     """The overlay for the WorkerAPI with a redis flavor.
