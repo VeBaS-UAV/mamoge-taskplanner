@@ -1,2 +1,6 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "--ignore=tests/taskplanner"
+
+[tool.pydocstyle]
+--convention="google"
