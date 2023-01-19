@@ -1,6 +1,3 @@
-import pytest
-
-
 from mamoge.models.capabilities import (
     Capabilities,
     Capability,
