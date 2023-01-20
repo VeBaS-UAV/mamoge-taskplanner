@@ -1,5 +1,3 @@
-import pytest
-
 from mamoge.api.worker import WorkerAPI, WorkerRedisAPI
 from mamoge.models.capabilities import Capabilities, Capability
 from mamoge.models.tasks import Task
@@ -10,6 +8,8 @@ class BaseWorkerAPI:
 
     Child classes are different implementations of the Baseclass,
     e.g. with different DB connections and corresponding specifications.
+
+    Note: does not start with `Test_` to avoid running the base class tests.
     """
 
     @classmethod
