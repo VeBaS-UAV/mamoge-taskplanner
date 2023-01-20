@@ -9,16 +9,23 @@ from mamoge.models.tasks import DAG
 
 
 class ProcessBoardAPI:
-    """Base class for the ProcessBoardAPI."""
+    """Base class for the Process Board API."""
 
     def run_process(self, name: str, template: DAG):
         """Instantiate and run the given named process.
 
         This will create a process instance, which will be run.
 
-        Args:
-            name (str): A unique name to identify the process.
-            template: DAG
+        Proposal for Args:
+            name (str): A unique name to identify the process
+            template (DAG): The DAG to be optimized. In subclasses this could be a
+                reference string (unique identifier) to a DAG, or a
+                `mamoge.models.tasks.DAG` object, or string formatted representation,
+                or a json formatted representation. This depends on the individual
+                implementation of the variants.
+                TODO: discuss whether to have a reference (as name like in
+                    `ProcessBoardAPI.run_process`), or an arbitrary type (`Any`)
+                    of dag here.
         """
         raise NotImplementedError
 
@@ -45,7 +52,7 @@ class ProcessBoardAPI:
 
         A delete is equivalent to aborting a process.
 
-        Args:
+        Proposal for Args:
             name (str): A unique name to identify the process.
         """
         raise NotImplementedError
