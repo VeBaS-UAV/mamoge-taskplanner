@@ -66,7 +66,7 @@ def dag_paths_w_capabilities(G: nx.DiGraph, path: List[Task], cb: Capabilities):
 
 def sum_requirements(path: List[Task]):
 
-    req = Requirements()
+    req = Requirements([])
     for t in path:
         req += t.requirements
 
