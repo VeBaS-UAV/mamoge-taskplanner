@@ -10,12 +10,30 @@ and harmonizing their use.
 
 import abc
 
+from mamoge.models.tasks import DAG
+
 
 class TaskPlannerBase(metaclass=abc.ABCMeta):
-    """Base class for the Task Planner API."""
+    """Base class for the Task Planner API.
+
+    Task Planner pushes DAGs to a list queue, to which the optimizer has access.
+
+    The optimizer waits for the DAGs accordingly, each DAG representing a job for it.
+
+    Could ine blocking queue, with queuing mechanics, preparing for the case that there
+    are several optimizers.
+
+    The optimizer can then also be accessible via the network (alternatively locally).
+
+    idea: before the optimization the DAG gets a UUID (as ACK), which is
+    returned to the (Task Planner), so that he can fetch the result later.
+    Alternatively: the Task Planner gets its own answer queue.
+
+    As answer the result of the optimizer comes into another queue.
+    """
 
     @abc.abstractmethod
-    def optimize(self, process):
+    def optimize(self, process: DAG):
         """Optimize the given given process.
 
         A process is a definition of Tasks and edges that together form a template
@@ -29,14 +47,11 @@ class TaskPlannerBase(metaclass=abc.ABCMeta):
         the Process Board. Use the Process Board to generate the necessary process.
 
         Proposal for Args:
-            dag (Any): The DAG to be optimized. In subclasses this could be a reference
-                string (unique identifier) to a DAG, or a `mamoge.models.tasks.DAG`
-                object, or string formatted representation, or a json formatted
-                representation. This depends on the individual implementation of
-                the variants.
-                TODO: discuss whether to have a reference (as name like in
-                    `ProcessBoardAPI.run_process`), or an arbitrary type (`Any`)
-                    of dag here.
+            process (DAG): The DAG to be optimized. In subclasses this could be a
+                reference string (unique identifier) to a DAG, or a
+                `mamoge.models.tasks.DAG` object, or string formatted representation, or
+                a json formatted representation. This depends on the individual
+                implementation of the variants.
         """
         raise NotImplementedError
 
