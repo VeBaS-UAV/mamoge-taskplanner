@@ -152,7 +152,7 @@ class Requirements:
     @staticmethod
     def from_dict(requirement_values: Dict):
         rl = [Requirement.from_dict(req) for name, req in requirement_values.items()]
-        return Requirements(*rl)
+        return Requirements(rl)
 
 
 class Capabilities:
@@ -215,7 +215,7 @@ class Capabilities:
     @staticmethod
     def from_dict(capabilities_values: Dict):
         rl = [Capability.from_dict(req) for name, req in capabilities_values.items()]
-        return Capabilities(*rl)
+        return Capabilities(rl)
 
 
 class CapabilityBag:

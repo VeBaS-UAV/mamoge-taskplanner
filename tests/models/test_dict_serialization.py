@@ -40,7 +40,7 @@ def test_requirements():
 
     r = Requirement(name="water", value=10)
 
-    rs = Requirements(r)
+    rs = Requirements([r])
     dict_rs = rs.to_dict()
 
     rs_new = Requirements.from_dict(dict_rs)
@@ -67,7 +67,7 @@ def test_task():
     t1 = Task(
         1,
         "T1",
-        requirements=Requirements(Requirement(name="water", value=10, consumes=True)),
+        requirements=Requirements([Requirement(name="water", value=10, consumes=True)]),
     )
 
     dict_t = t1.to_dict()
@@ -84,27 +84,27 @@ def test_dag():
     t1 = Task(
         1,
         "T1",
-        requirements=Requirements(Requirement(name="water", value=10, consumes=True)),
+        requirements=Requirements([Requirement(name="water", value=10, consumes=True)]),
     )
     t2 = Task(
         2,
         "T2",
-        requirements=Requirements(Requirement(name="water", value=10, consumes=True)),
+        requirements=Requirements([Requirement(name="water", value=10, consumes=True)]),
     )
     t3 = Task(
         3,
         "T3",
-        requirements=Requirements(Requirement(name="water", value=10, consumes=True)),
+        requirements=Requirements([Requirement(name="water", value=10, consumes=True)]),
     )
     t4 = Task(
         4,
         "T4",
-        requirements=Requirements(Requirement(name="water", value=10, consumes=True)),
+        requirements=Requirements([Requirement(name="water", value=10, consumes=True)]),
     )
     t5 = Task(
         5,
         "T5",
-        requirements=Requirements(Requirement(name="water", value=10, consumes=True)),
+        requirements=Requirements([Requirement(name="water", value=10, consumes=True)]),
     )
     #
 

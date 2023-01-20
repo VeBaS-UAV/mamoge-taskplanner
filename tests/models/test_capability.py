@@ -38,10 +38,10 @@ class TestCapabilities:
         cls.cap_water = Capability("water", 10)
         cls.cap_energy = Capability("energy", 15)
 
-        cls.req_single = Requirements(cls.r_water)
-        cls.req_multiple = Requirements(cls.r_water, cls.r_energy)
-        cls.cap_single = Capabilities(cls.cap_water)
-        cls.cap_multiple = Capabilities(cls.cap_water, cls.cap_energy)
+        cls.req_single = Requirements([cls.r_water])
+        cls.req_multiple = Requirements([cls.r_water, cls.r_energy])
+        cls.cap_single = Capabilities([cls.cap_water])
+        cls.cap_multiple = Capabilities([cls.cap_water, cls.cap_energy])
 
     def test_int_capabilities_single(self):
 
@@ -67,7 +67,7 @@ class TestCapabilities:
     def test_int_capabilities_multiple_capabilities_not_fitting(self):
         cap_energy = Capability("energy", 15)
         cap_carry = Capability("carry", 20)
-        cap_multiple = Capabilities(cap_energy, cap_carry)
+        cap_multiple = Capabilities([cap_energy, cap_carry])
 
         assert self.req_multiple.meet(cap_multiple) is False
 
@@ -88,11 +88,11 @@ def test_multi_int_capabilities():
     r_water = Requirement("water", 10)
     r_temp = Requirement("temp", 50)
 
-    req = Requirements(r_water, r_temp)
+    req = Requirements([r_water, r_temp])
 
     cap_water = Capability("water", 10)
 
-    cap = Capabilities(cap_water)
+    cap = Capabilities([cap_water])
 
     assert req.meet(cap) is False
     assert cap.satisfy(req) is False
