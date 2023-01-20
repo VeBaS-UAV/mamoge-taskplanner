@@ -11,7 +11,7 @@ class WorkerAPI:
     def register(self, name: str, capabilities: Capabilities):
         """Register this Worker at the Taskplanner.
 
-        Args:
+        Proposal for Args:
             name (str): name of the worker that is unique in the domain space
             capabilities (Capabilities): workers' capabilities
         """
@@ -20,7 +20,7 @@ class WorkerAPI:
     def unregister(self, name: str):
         """Unregister this Worker from the Taskplanner.
 
-        Args:
+        Proposal for Args:
             name (str): name of the worker that is unique in the domain space
         """
         raise NotImplementedError
@@ -32,7 +32,7 @@ class WorkerAPI:
         Otherwise the Taskplanner might try to retract Tasks that have assigned to this
         worker.
 
-        Args:
+        Proposal for Args:
             name (str): name of the worker that is unique in the domain space
         """
         raise NotImplementedError
