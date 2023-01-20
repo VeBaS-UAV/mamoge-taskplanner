@@ -14,7 +14,7 @@ class BaseWorkerAPI:
 
     @classmethod
     def setup_class(cls):
-        cls.worker = WorkerAPI()
+        cls.worker: WorkerAPI
 
         cls.cap_water = Capability("water", 10)
         cls.cap_energy = Capability("energy", 15)
