@@ -16,37 +16,37 @@ def generate_board_example_2():
     dag = DAG("Test_DAG")
 
     t1 = Task(
-        1, "T1", requirements=Requirements(Requirement("water", 10, consumes=True))
+        1, "T1", requirements=Requirements([Requirement("water", 10, consumes=True)])
     )
     t2 = Task(
-        2, "T2", requirements=Requirements(Requirement("water", 20, consumes=True))
+        2, "T2", requirements=Requirements([Requirement("water", 20, consumes=True)])
     )
     t3 = Task(
-        3, "T3", requirements=Requirements(Requirement("water", 10, consumes=True))
+        3, "T3", requirements=Requirements([Requirement("water", 10, consumes=True)])
     )
     t4 = Task(
-        4, "T4", requirements=Requirements(Requirement("water", 10, consumes=True))
+        4, "T4", requirements=Requirements([Requirement("water", 10, consumes=True)])
     )
     t5 = Task(
-        5, "T5", requirements=Requirements(Requirement("water", 10, consumes=True))
+        5, "T5", requirements=Requirements([Requirement("water", 10, consumes=True)])
     )
 
     t6 = Task(
-        6, "T6", requirements=Requirements(Requirement("water", 15, consumes=True))
+        6, "T6", requirements=Requirements([Requirement("water", 15, consumes=True)])
     )
 
     t7 = Task(
-        7, "T7", requirements=Requirements(Requirement("water", 15, consumes=True))
+        7, "T7", requirements=Requirements([Requirement("water", 15, consumes=True)])
     )
     t8 = Task(
-        8, "T8", requirements=Requirements(Requirement("water", 20, consumes=True))
+        8, "T8", requirements=Requirements([Requirement("water", 20, consumes=True)])
     )
     t9 = Task(
-        9, "T9", requirements=Requirements(Requirement("water", 20, consumes=True))
+        9, "T9", requirements=Requirements([Requirement("water", 20, consumes=True)])
     )
 
     t10 = Task(
-        10, "T10", requirements=Requirements(Requirement("water", 60, consumes=True))
+        10, "T10", requirements=Requirements([Requirement("water", 60, consumes=True)])
     )
 
     # t5 = Task(5, "Task5")
@@ -83,19 +83,19 @@ def generate_board_example_1():
     dag = DAG("Test_DAG")
 
     t1 = Task(
-        1, "Task1", requirements=Requirements(Requirement("water", 10, consumes=True))
+        1, "Task1", requirements=Requirements([Requirement("water", 10, consumes=True)])
     )
     t2 = Task(
-        2, "Task2", requirements=Requirements(Requirement("water", 10, consumes=True))
+        2, "Task2", requirements=Requirements([Requirement("water", 10, consumes=True)])
     )
     t3 = Task(
-        3, "Task3", requirements=Requirements(Requirement("water", 10, consumes=True))
+        3, "Task3", requirements=Requirements([Requirement("water", 10, consumes=True)])
     )
     t4 = Task(
-        4, "Task4", requirements=Requirements(Requirement("water", 10, consumes=True))
+        4, "Task4", requirements=Requirements([Requirement("water", 10, consumes=True)])
     )
     t5 = Task(
-        5, "Task5", requirements=Requirements(Requirement("water", 10, consumes=True))
+        5, "Task5", requirements=Requirements([Requirement("water", 10, consumes=True)])
     )
     # t5 = Task(5, "Task5")
     #
@@ -203,7 +203,7 @@ def test_capabiltiy_query():
     tasks: List[Task] = pboard.get_openlist()
     assert len(tasks) == 1
 
-    cap = Capabilities(Capability("water", 20))
+    cap = Capabilities([Capability("water", 20)])
     tasks: List[Task] = pboard.get_openlist(capabilities=cap)
     assert len(tasks) == 1
 
@@ -214,16 +214,16 @@ def test_capabiltiy_query():
     pboard.event_input(task.id, TaskEvent.START)
     pboard.event_input(task.id, TaskEvent.COMPLETED)
 
-    cap = Capabilities(Capability("water", 20))
+    cap = Capabilities([Capability("water", 20)])
     tasks: List[Task] = pboard.get_openlist(capabilities=cap)
     assert len(tasks) == 1
     assert tasks[0].local_id == 2
 
-    cap = Capabilities(Capability("water", 5))
+    cap = Capabilities([Capability("water", 5)])
     tasks: List[Task] = pboard.get_openlist(capabilities=cap)
     assert len(tasks) == 0
 
-    cap = Capabilities(Capability("water", 25), Capability("temp", 50))
+    cap = Capabilities([Capability("water", 25), Capability("temp", 50)])
     tasks: List[Task] = pboard.get_openlist(capabilities=cap)
     assert len(tasks) == 1
 
@@ -254,21 +254,21 @@ def test_tasklist_query_w_capabilities():
     assert len(tasklists[0]) == 3
     assert len(tasklists[1]) == 4
 
-    cap = Capabilities(Capability("water", 20))
+    cap = Capabilities([Capability("water", 20)])
     tasklists: List[List[Task]] = pboard.get_tasklists(capabilities=cap)
 
     assert len(tasklists) == 2
     assert len(tasklists[0]) == 2
     assert len(tasklists[1]) == 2
 
-    cap = Capabilities(Capability("water", 30))
+    cap = Capabilities([Capability("water", 30)])
     tasklists: List[List[Task]] = pboard.get_tasklists(capabilities=cap)
 
     assert len(tasklists) == 2
     assert len(tasklists[0]) == 3
     assert len(tasklists[1]) == 3
 
-    cap = Capabilities(Capability("water", 40))
+    cap = Capabilities([Capability("water", 40)])
     tasklists: List[List[Task]] = pboard.get_tasklists(capabilities=cap)
 
     assert len(tasklists) == 2

@@ -27,7 +27,7 @@ class Requirement:
         return self.value <= other.value
 
     def __repr__(self):
-        return f"REQ[{self.name, self.value}]"
+        return f"Requirement{self.name, self.value}"
 
     def copy(self):
         return Requirement(self.name, self.value)
@@ -64,7 +64,7 @@ class Capability:
         return self.value >= other.value
 
     def __repr__(self):
-        return f"CAP[{self.name, self.value}]"
+        return f"Capability{self.name, self.value}"
 
     def copy(self):
         return Capability(self.name, self.value)
@@ -90,7 +90,7 @@ class Capability:
 
 
 class Requirements:
-    def __init__(self, *requirements: List[Requirement]):
+    def __init__(self, requirements: List[Requirement]):
         self.requirements = {c.name: c for c in requirements}
 
     def __contains__(self, item: Capability):
@@ -119,7 +119,7 @@ class Requirements:
         return self
 
     def __repr__(self):
-        return "REQS:{" + ", ".join([str(r) for r in self.requirements.values()]) + "}"
+        return f"Requirements({[r for r in self.requirements.values()]})"
 
     def meet(self, other: Capabilities):
         for req_name, self_req in self.requirements.items():
@@ -139,7 +139,7 @@ class Requirements:
         return True
 
     def copy(self):
-        cpy = Requirements()
+        cpy = Requirements([])
 
         for r in self.requirements:
             cpy += r.copy()
@@ -156,7 +156,7 @@ class Requirements:
 
 
 class Capabilities:
-    def __init__(self, *capabilities: List[Capability]):
+    def __init__(self, capabilities: List[Capability]):
         self.capabilities = {c.name: c for c in capabilities}
 
     def __contains__(self, item: Capability):
@@ -172,10 +172,10 @@ class Capabilities:
         return self
 
     def __repr__(self):
-        return "CAPS:{" + ", ".join([str(r) for r in self.capabilities.values()]) + "}"
+        return f"Capabilities({[c for c in self.capabilities.values()]})"
 
     def copy(self):
-        cpy = Capabilities()
+        cpy = Capabilities([])
 
         for n, c in self.capabilities.items():
             cpy += c.copy()
@@ -219,9 +219,20 @@ class Capabilities:
 
 
 class CapabilityBag:
+    """menge an capabilities.
+
+    frage: How much can I take?
+    clou: remaining capabilities
+
+    TODO: check if still valid and necessary
+
+    can add:
+        boolean: is there still enough resources for the task?
+    """
+
     def __init__(self, capabilities: Capabilities):
         self.capabilities = capabilities
-        self.requirements = Requirements()
+        self.requirements = Requirements([])
 
     def remaining_capabilities(self):
         temp_cap = self.capabilities.copy()

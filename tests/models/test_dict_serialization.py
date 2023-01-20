@@ -53,7 +53,7 @@ def test_capabilities():
 
     c = Capability(name="water", value=10)
 
-    cs = Capabilities(c)
+    cs = Capabilities([c])
     dict_cs = cs.to_dict()
 
     cs_new = Capabilities.from_dict(dict_cs)

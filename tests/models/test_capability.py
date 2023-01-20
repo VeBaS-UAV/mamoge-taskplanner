@@ -110,7 +110,7 @@ def test_multi_int_capabilities():
 
 def test_capabilitybag_basics():
 
-    cap = Capabilities(Capability("water", 20))
+    cap = Capabilities([Capability("water", 20)])
 
     caps = CapabilityBag(cap)
 

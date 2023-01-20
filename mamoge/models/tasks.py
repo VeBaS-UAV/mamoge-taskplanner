@@ -114,7 +114,7 @@ class Tasks:
 
 class TaskSyncPoint(Task):
     def __init__(self, id: str, name: str) -> None:
-        super().__init__(id, name, requirements=Requirements())
+        super().__init__(id, name, requirements=Requirements([]))
 
 
 class DAG:
