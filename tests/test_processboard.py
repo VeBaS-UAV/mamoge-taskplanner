@@ -7,6 +7,8 @@ class BaseProcessBoardAPI:
 
     Child classes are different implementations of the Baseclass,
     e.g. with different DB connections and corresponding specifications.
+
+    Note: does not start with `Test_` to avoid running the base class tests.
     """
 
     @classmethod
