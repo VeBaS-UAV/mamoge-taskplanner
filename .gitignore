@@ -161,3 +161,9 @@ cython_debug/
 
 # workspace settings
 .vscode/launch.json
+
+# mob config
+.mob
+
+# local pyright config
+pyrightconfig.json
