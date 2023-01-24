@@ -161,9 +161,13 @@ cython_debug/
 
 # workspace settings
 .vscode/launch.json
+**/development*.py
 
 # mob config
 .mob
 
 # local pyright config
 pyrightconfig.json
+
+# redis database dump
+*.rdb
