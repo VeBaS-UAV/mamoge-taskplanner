@@ -1,5 +1,5 @@
 from mamoge.api.processboard import ProcessBoardAPI, ProcessBoardRedisAPI
-from mamoge.models.capabilities import Capabilities, Capability
+from mamoge.models.capabilities import Capabilities, Capability, RequirementTime
 
 
 class BaseProcessBoardAPI:
@@ -17,7 +17,9 @@ class BaseProcessBoardAPI:
 
         cls.cap_water = Capability("water", 10)
         cls.cap_energy = Capability("energy", 15)
-        cls.cap_multiple = Capabilities(cls.cap_water, cls.cap_energy)
+        cls.cap_multiple = Capabilities([cls.cap_water, cls.cap_energy])
+
+        cls.req_time = RequirementTime("time_window", 1100, 1300)
 
 
 class Test_ProcessBoardRedis(BaseProcessBoardAPI):

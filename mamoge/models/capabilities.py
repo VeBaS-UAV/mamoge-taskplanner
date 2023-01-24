@@ -52,6 +52,18 @@ class Requirement:
         return r
 
 
+class RequirementTime:
+    """Time Requirement of a Task.
+
+    Start and end times in combination define a time window.
+    """
+
+    def __init__(self, name: str, start, end):
+        self._name = name
+        self._start = start
+        self._end = end
+
+
 class Capability:
     def __init__(self, name: str, value: Any):
         self.name = name

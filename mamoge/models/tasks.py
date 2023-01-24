@@ -6,7 +6,7 @@ import logging
 import networkx as nx
 
 from mamoge.models.capabilities import Capabilities
-from mamoge.models.capabilities import Requirements
+from mamoge.models.capabilities import Requirements, RequirementTime
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -39,6 +39,7 @@ class Task:
         id: str,
         name: str,
         requirements: Requirements,
+        time=RequirementTime("none", None, None),
         state: TaskState = TaskState.UNDEFINED,
     ) -> None:
         self._logger = logging.getLogger(Task.__name__)

@@ -1,5 +1,8 @@
 from mamoge.api.planner import TaskPlannerBase, TaskplannerRedisAPI
-from mamoge.models.capabilities import Capabilities, Capability
+from mamoge.models.capabilities import Capability, Capabilities
+from mamoge.models.capabilities import Requirement, Requirements
+from mamoge.models.capabilities import RequirementTime
+from mamoge.models.tasks import Task
 
 
 class BasePlannerAPI:
@@ -19,7 +22,19 @@ class BasePlannerAPI:
         cls.cap_energy = Capability("energy", 15)
         cls.cap_multiple = Capabilities([cls.cap_water, cls.cap_energy])
 
-        # cls.t1 = Task(id=, name=, requirements=, state=)
+        cls.req_energy = Requirement("energy", 10)
+        cls.req_time = RequirementTime("time_window", 1100, 1300)
+
+        cls.t1 = Task(
+            id="t1",
+            name="t1",
+            requirements=Requirements([cls.req_energy]),
+            time=cls.req_time,
+        )
+
+    def test_time_requirement(self):
+        # check if a task meets the time requirement
+        assert False
 
 
 class Test_PlannerRedisAPI(BasePlannerAPI):
