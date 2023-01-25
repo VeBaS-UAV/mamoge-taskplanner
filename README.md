@@ -18,14 +18,20 @@ sequenceDiagram
 Sequence Diagram Communication with a Flavor, e.g. a Message Queue Backend with persistance:
 ```mermaid
 sequenceDiagram
-    WorkerAgent1->>+WorkerAPI1: register
-    WorkerAPI1->>+Backend(Store+Comm): send register message
-    Planner->+Backend(Store+Comm): subscribed
-    Planner->>+Planner: append worker to list
-    Planner->>+Planner: planning(workers, resources)
-    Planner->>+Backend(Store+Comm): publish Task list
-    WorkerAPI1->+Backend(Store+Comm): subscribed
-    WorkerAPI1->>+WorkerAgent1: route taskPush
+    WorkerAgent->>+WorkerAPI: register
+    WorkerAPI->>+Backend (Store & Comm): send register message
+    loop e.g. event processing
+        activate Planner
+        Planner-->Backend (Store & Comm): subscribed
+        Planner->>Planner: append worker to list
+        Planner->>Planner: planning(workers, resources)
+        Planner->>Backend (Store & Comm): publish Task list
+        deactivate Planner
+    end
+    loop e.g. event processing
+        WorkerAPI-->Backend (Store & Comm): subscribed
+    end
+    WorkerAPI->>+WorkerAgent: route taskPush
 ```
 
 # Contributing
