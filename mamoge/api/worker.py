@@ -1,4 +1,14 @@
-"""MamoGe Worker API."""
+"""MamoGe Worker API.
+
+The Worker API may be used as an entry or connection point to the
+MamoGe Task Planning System. It could be utilized by a machine that intends to get
+Tasks assigned to itself.
+
+With this, the Worker has to handle the fulfillment of the Tasks with its own
+job management. Meaning the WorkerAPI is just for Task retrieval as well as for
+registering in the system. When a certain worker has done its job, it has to utilize
+the API again to let the system know, what the current status of the Tasks are.
+"""
 import abc
 
 import redis
