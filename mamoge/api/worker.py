@@ -1,13 +1,16 @@
 """MamoGe Worker API."""
+import abc
+
 import redis
 
 from mamoge.models.capabilities import Capabilities, Capability
-from mamoge.models.tasks import Tasks
+from mamoge.models.tasks import TaskEvent, TaskState, Tasks
 
 
-class WorkerAPI:
+class WorkerAPI(metaclass=abc.ABCMeta):
     """Base class for the WorkerAPI."""
 
+    @abc.abstractmethod
     def register(self, name: str, capabilities: Capabilities):
         """Register this Worker at the Taskplanner.
 
@@ -17,6 +20,7 @@ class WorkerAPI:
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
     def unregister(self, name: str):
         """Unregister this Worker from the Taskplanner.
 
@@ -25,6 +29,7 @@ class WorkerAPI:
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
     def keep_alive(self, name: str):
         """Send a Heatbeat.
 
@@ -37,28 +42,39 @@ class WorkerAPI:
         """
         raise NotImplementedError
 
-    def task_update(self, id, status):
+    @abc.abstractmethod
+    def task_update_send(self, id, status: TaskState):
         """Update the properties of a Task.
 
-        This could be used after finishing a task or after aborting it. The status of
-        the tasks has to be set, so that the Taskplanner can take this status into
+        This could be used after finishing a Task or after aborting it. The status of
+        the Tasks has to be set, so that the Taskplanner can take this status into
         account for the next planning job.
         """
         raise NotImplementedError
 
-    def tasks_receive(self):
-        """Get the next scheduled Task(s) for this Worker.
+    @abc.abstractmethod
+    def tasks(self) -> Tasks:
+        """Query current tasks from backend.
 
-        TODO define definitive purpose of the function.
+        Either reply to push by the Planner or implementation for pull to Planner,
+        depending on implementation flavor.
         """
         raise NotImplementedError
 
-    def update_capabilities(self, name: str, capabilities: Capabilities):
-        """Update the Capabilities of this Worker."""
+    @abc.abstractmethod
+    def capabilities_update_send(self, name: str, capabilities: Capabilities):
+        """Update the Capabilities of this Worker.
+
+        This is an information directing to the Taskplanner.
+        """
         raise NotImplementedError
 
-    def update_capability(self, name: str, capability: Capability):
-        """Update a single Capability of this Worker."""
+    @abc.abstractmethod
+    def capability_update_send(self, name: str, capability: Capability):
+        """Update a single Capability of this Worker.
+
+        This is an information directing to the Taskplanner.
+        """
         raise NotImplementedError
 
 
@@ -73,7 +89,7 @@ class WorkerRedisAPI(WorkerAPI):
         super().__init__()
         self.redis = redis.Redis(host, port)
         self.name = name
-        self.tasks = list()
+        self._tasks = list()
 
     def register(self, capabilities: Capabilities):
         """Register this worker at the Taskplanner.
@@ -101,9 +117,13 @@ class WorkerRedisAPI(WorkerAPI):
         # Removes and returns the first elements of the list stored at key.
         self.tasks.append(self.redis.lpop(f"workers:{self.name}:pending"))
 
-        # Returns the element at index index in the list stored at key.
-        for i in range(0, rlen):
-            self.tasks.append(self.redis.lindex(f"workers:{self.name}:pending", 1))
+        # Returns the element at index in the list stored at key. Here, effectively the
+        # whole list, since from 0 to length of the list
+        for i in range(0, rlen - 1):
+            self.tasks.append(self.redis.lindex(f"workers:{self.name}:pending", i))
+
+        # alternative to list retrieval in previous line
+        self.redis.lrange(f"workers:{self.name}:pending", 0, -1)
 
 
 def push_tasks(tasks: Tasks):
