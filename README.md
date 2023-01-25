@@ -1,5 +1,33 @@
 # MamoGe Taskplanner
 
+## Architecture Idea and Design
+
+The Main Components are `TaskPlanner`, `ProcessBoard` and the `Worker`s. There is a basic implamentation for all of them which are supposed to be used as interfaces (abstract classes) that will be implemented to allow different communication philosophies.
+
+Sequence Diagram Business Logic:
+```mermaid
+sequenceDiagram
+    WorkerAgent->>+WorkerAPI: register
+    WorkerAPI->>+PlannerREST: route register()
+    PlannerREST->>+PlannerREST: append worker to list
+    PlannerREST->>+PlannerREST: planning(workers, resources)
+    PlannerREST->>+WorkerAPI: push Task list
+    WorkerAPI->>+WorkerAgent: route taskPush
+```
+
+Sequence Diagram Communication with a Flavor, e.g. a Message Queue Backend with persistance:
+```mermaid
+sequenceDiagram
+    WorkerAgent1->>+WorkerAPI1: register
+    WorkerAPI1->>+Backend(Store+Comm): send register message
+    Planner->+Backend(Store+Comm): subscribed
+    Planner->>+Planner: append worker to list
+    Planner->>+Planner: planning(workers, resources)
+    Planner->>+Backend(Store+Comm): publish Task list
+    WorkerAPI1->+Backend(Store+Comm): subscribed
+    WorkerAPI1->>+WorkerAgent1: route taskPush
+```
+
 # Contributing
 
 ## Setup development environment
