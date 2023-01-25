@@ -35,27 +35,21 @@ class BaseWorkerAPI:
         assert result is True
 
     def test_task_update(self):
-        # TODO
-        # id
-        # status
-
-        # result = self.worker.task_update(id, status)
-        assert True is True
+        assert False
 
     def test_tasks_receive(self):
-        assert True is True
+        assert False
 
     def test_update_capabilities(self):
-
-        result = self.worker.update_capabilities("username", self.cap_multiple)
+        result = self.worker.capabilities_update_send("username", self.cap_multiple)
         assert result is True
 
     def test_update_capability(self):
-        result = self.worker.update_capability("username", self.cap_water)
+        result = self.worker.capability_update_send("username", self.cap_water)
         assert result is True
 
 
-class Test_Redis(BaseWorkerAPI):
+class Test_WorkerRedis(BaseWorkerAPI):
     """Implements the Process Board with a Redis connection.
 
     It inherits the base classes' test functions. Therefore only test for function
@@ -67,7 +61,13 @@ class Test_Redis(BaseWorkerAPI):
         cls.worker = WorkerRedisAPI("name")
 
 
-class Test_Postgressql(BaseWorkerAPI):
+class Test_WorkerPostgresSQL(BaseWorkerAPI):
+    @classmethod
+    def setup_class(cls):
+        cls.worker = WorkerAPI()
+
+
+class Test_WorkerRabbitMQ(BaseWorkerAPI):
     @classmethod
     def setup_class(cls):
         cls.worker = WorkerAPI()
