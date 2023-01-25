@@ -162,6 +162,7 @@ cython_debug/
 # workspace settings
 .vscode/launch.json
 **/development*.py
+scratchpad/
 
 # mob config
 .mob
