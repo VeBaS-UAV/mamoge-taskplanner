@@ -10,7 +10,8 @@ and harmonizing their use.
 
 import abc
 
-from mamoge.models.tasks import DAG
+from mamoge.models.tasks import DAG, Tasks
+from mamoge.models.capabilities import Capability, Capabilities
 
 
 class TaskPlannerBase(metaclass=abc.ABCMeta):
@@ -56,13 +57,65 @@ class TaskPlannerBase(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update_task_status(self):
-        """Update a Tasks' status."""
+    def task_update_send(self):
+        """Update a Tasks' status.
+
+        Directive to the board.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def task_update_receive(self):
+        """Update a Tasks' status.
+
+        Information from outside. This may be the worker or the Process Board or
+        whomever.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def capability_update_receive(self, name: str, capability: Capability):
+        """Update a Capability of a specific worker.
+
+        Information from outside. This may be the worker or the Process Board or
+        whomever.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def capabilities_update_receive(self, name: str, capabilities: Capabilities):
+        """Update Capabilities of a specific worker.
+
+        Information from outside. This may be the worker or the Process Board or
+        whomever.
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
     def register(self, name):
-        """Register a Worker at the Task Planner."""
+        """Register a Worker at the Task Planner.
+
+        Either reply to request by the Worker or implementation for push to Worker,
+        depending on implementation flavor.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unregister(self, name):
+        """Unregister a Worker at the Task Planner.
+
+        Either reply to request by the Worker or implementation for push to Worker,
+        depending on implementation flavor.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def tasks(self, worker_name: str, tasks: Tasks):
+        """Return current tasks for worker.
+
+        Either reply to request by the Worker or implementation for push to Worker,
+        depending on implementation flavor.
+        """
         raise NotImplementedError
 
 
