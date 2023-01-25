@@ -134,11 +134,3 @@ class WorkerRedisAPI(WorkerAPI):
 
         # alternative to list retrieval in previous line
         self.redis.lrange(f"workers:{self.name}:pending", 0, -1)
-
-
-def push_tasks(tasks: Tasks):
-    """Experimental function; to be deleted."""
-    r = redis.Redis(host="localhost", port=6379)
-
-    for task in tasks.tasks:
-        r.rpush("workers:dude:pending", task.to_json())
