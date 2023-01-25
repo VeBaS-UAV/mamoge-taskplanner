@@ -16,7 +16,7 @@
   // "forwardPorts": [],
 
   // The postCreateCommand actions are run once the container is created
-  "postCreateCommand": "pip install -r requirements.txt && pip install -e .",
+  "postCreateCommand": "pip install -r requirements.txt && pip install -e . && curl -sL install.mob.sh | sudo sh",
 
   // Configure tool-specific properties.
   "customizations": {
