@@ -17,6 +17,7 @@ class TaskState(Enum):
     UNDEFINED = ("undefined",)
     AVAILABLE = ("available",)
     PLANNED = ("planned",)
+    APROVAL_PENDING = ("aproval_pending",)
     QUEUED = ("queued",)
     RUNNING = ("running",)
     COMPLETED = "completed"
