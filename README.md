@@ -34,6 +34,25 @@ sequenceDiagram
     WorkerAPI->>+WorkerAgent: route taskPush
 ```
 
+Task State Diagram
+
+``` mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> UNDEFINED
+    UNDEFINED --> AVAILABLE: E_ACTIVATE
+    AVAILABLE --> PENDING: E_RESERVE
+    PENDING --> AVAILABLE: E_REJECTED
+    PENDING --> SCHEDULED: E_ACCEPTED
+    SCHEDULED --> RUNNING: E_START
+    SCHEDULED --> AVAILABLE: E_REJECTED
+    RUNNING --> COMPLETED: E_DONE
+    RUNNING --> FAILURE: E_ERROR
+    FAILURE --> AVAILABLE: E_RESET
+    COMPLETED --> [*]
+```
+
+`
 # Contributing
 
 ## Setup development environment

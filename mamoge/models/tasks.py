@@ -14,24 +14,24 @@ logger = logging.getLogger()
 
 
 class TaskState(Enum):
-    UNDEFINED = ("undefined",)
-    AVAILABLE = ("available",)
-    PLANNED = ("planned",)
-    APROVAL_PENDING = ("aproval_pending",)
-    QUEUED = ("queued",)
-    RUNNING = ("running",)
-    COMPLETED = "completed"
-    FAILURE = "failure"
+    UNDEFINED = "UNDEFINED"
+    AVAILABLE = "AVAILABLE"
+    PENDING = "PENDING"
+    SCHEDULED = "SCHEDULED"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILURE = "FAILURE"
 
 
 class TaskEvent(Enum):
     ACTIVATE = "ACTIVATE"
-    PLAN = "PLAN"
-    ACCEPT = "ACCEPT"
-    START = "start"
-    COMPLETED = "completed"
-    ERROR = "error"
-    RESOLVED = "resolved"
+    RESERVE = "RESERVE"
+    REJECTED = "REJECTED"
+    ACCEPTED = "ACCEPTED"
+    START = "START"
+    DONE = "DONE"
+    ERROR = "ERROR"
+    RESET = "RESET"
 
 
 class Task:
